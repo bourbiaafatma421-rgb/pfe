@@ -18,6 +18,7 @@ class CollaborateurController extends Controller
             'prenom'=>'required|string',
             'numero_telephone'=>['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
             'poste'=>'required|string',
+            'etat'=>'required|string|in:encours,terminer',
             ],
             ['numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678']);
         $password=Str::random(8);
@@ -25,6 +26,7 @@ class CollaborateurController extends Controller
             'email'=>$request->email,
             'password'=>Hash::make($password),
             'role'=>'collaborateur',
+            
         ]);
         $collab=Collaborateur::create([
             'user_id'=>$user->id,
@@ -32,6 +34,7 @@ class CollaborateurController extends Controller
             'prenom'=>$request->prenom,
             'numero_telephone'=>$request->numero_telephone,
             'poste'=>$request->poste,
+            'etat'=>$request->etat ?? 'encours',
         ]);
         //retourner email+password 
         return response()->json([
@@ -43,4 +46,35 @@ class CollaborateurController extends Controller
             ]
         ],201);
     }
+    public function getbynometprenom(Request $request){
+        $request->validate([
+            'nom'=>'required|string',
+            'prenom'=>'required|string',
+        ]);
+        $collab=Collaborateur::where('nom',$request->nom)
+                             ->where('prenom',$request->prenom)
+                             ->get();
+        if (!$collab) {
+        return response()->json([
+            'message' => 'Collaborateur non trouvé'
+        ], 404);
+    }
+
+    return response()->json($collab);
+}
+public function getbyetat(Request $request){
+    $request->validate([
+        'etat'=>'required|string',
+    ]);
+    $collab=Collaborateur::where('etat',$request->etat)
+                          ->get();
+    if (!$collab) {
+        return response()->json([
+            'message' => 'Collaborateur non trouvé'
+        ], 404);
+}else{
+    return response()->json($collab);
+}
+}
+
 }

@@ -12,7 +12,8 @@ class Collaborateur extends Model
     'prenom',
     'numero_telephone',
     'poste',
-    'date_recrutement'
+    'date_recrutement',
+    'etat'
    ];
    public function user(){
     return $this->belongsTo(User::class);
