@@ -78,7 +78,9 @@ public function getbyetat(Request $request){
 }
 }
 public function getall(){
-    $collab=Collaborateur::all();
+    $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+                            ->select('collaborateurs.*', 'users.email')
+                            ->get();
     if(!$collab){
         return response()->json()([
             'message'=>'collaborateur non trouvé'
