@@ -46,6 +46,7 @@ class CollaborateurController extends Controller
             ]
         ],201);
     }
+    //get
     public function getbynometprenom(Request $request){
         $request->validate([
             'nom'=>'required|string',
@@ -75,6 +76,16 @@ public function getbyetat(Request $request){
 }else{
     return response()->json($collab);
 }
+}
+public function getall(){
+    $collab=Collaborateur::all();
+    if(!$collab){
+        return response()->json()([
+            'message'=>'collaborateur non trouvé'
+        ],404);
+    }else{
+        return response()->json($collab);
+    }
 }
 
 }
