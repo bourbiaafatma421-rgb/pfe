@@ -52,8 +52,10 @@ class CollaborateurController extends Controller
             'nom'=>'required|string',
             'prenom'=>'required|string',
         ]);
-        $collab=Collaborateur::where('nom',$request->nom)
+        $collab=Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+                             ->where('nom',$request->nom)
                              ->where('prenom',$request->prenom)
+                             ->select('collaborateurs.*', 'users.email')
                              ->get();
         if (!$collab) {
         return response()->json([
@@ -67,7 +69,9 @@ public function getbyetat(Request $request){
     $request->validate([
         'etat'=>'required|string',
     ]);
-    $collab=Collaborateur::where('etat',$request->etat)
+    $collab=Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+                         ->where('etat',$request->etat)
+                          ->select('collaborateurs.*', 'users.email')
                           ->get();
     if (!$collab) {
         return response()->json([
