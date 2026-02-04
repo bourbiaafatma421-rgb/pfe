@@ -18,7 +18,7 @@ class CollaborateurController extends Controller
             'prenom'=>'required|string',
             'numero_telephone'=>['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
             'poste'=>'required|string',
-            'etat'=>'required|string|in:encours,terminer',
+            'etat'=>'required|string|in:encours,terminer,Terminer,Encours',
             ],
             ['numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678']);
         $password=Str::random(8);
@@ -45,6 +45,7 @@ class CollaborateurController extends Controller
                 'password_temporaire'=>$password
             ]
         ],201);
+        $passetat=true;
     }
     //get
     public function getbynometprenom(Request $request){
@@ -57,7 +58,7 @@ class CollaborateurController extends Controller
                              ->where('prenom',$request->prenom)
                              ->select('collaborateurs.*', 'users.email')
                              ->get();
-        if (!$collab) {
+        if ($collab->isEmpty()) {
         return response()->json([
             'message' => 'Collaborateur non trouvé'
         ], 404);
@@ -73,7 +74,7 @@ public function getbyetat(Request $request){
                          ->where('etat',$request->etat)
                           ->select('collaborateurs.*', 'users.email')
                           ->get();
-    if (!$collab) {
+    if ($collab->isEmpty()) {
         return response()->json([
             'message' => 'Collaborateur non trouvé'
         ], 404);
@@ -85,13 +86,44 @@ public function getall(){
     $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
                             ->select('collaborateurs.*', 'users.email')
                             ->get();
-    if(!$collab){
+    if($collab->isEmpty()){
         return response()->json()([
             'message'=>'collaborateur non trouvé'
         ],404);
     }else{
         return response()->json($collab);
     }
+}
+//update
+public function modifiercollaborateur(Request $request,$id){
+    $request->validate([
+        'etat'=>'sometimes|string|in:encours,terminer,Terminer,Encours',
+        'poste'=>'sometimes|string',
+        'numero_telephone'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+    ],
+    ['numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678']);  
+    $collab = Collaborateur::find($id);
+    
+    if(!$collab){
+        return response()->json([
+            'message' => 'Collaborateur non trouvé'
+        ], 404);
+    }
+
+    if($request->has('poste')){
+        $collab->poste=$request->poste;
+    }
+    if($request->has('numero_telephone')){
+        $collab->numero_telephone=$request->numero_telephone;
+    }
+    if($request->has('etat')){
+        $collab->etat=$request->etat;
+    }
+    $collab->save();
+    return response()->json([
+        'message'=>'colllaborateur modifié avec succès',
+        'collaborateur'=>$collab
+    ]); 
 }
 
 }
