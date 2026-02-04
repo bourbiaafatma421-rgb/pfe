@@ -2,29 +2,26 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-class sttafSeeder extends Seeder
+
+class StaffSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-      // Définir les emails et infos fixes
+        // Définir les emails et infos fixes
         $defaultStaffs = [
             [
-                'role' => 'manager',
+                'role' => 'manager', // doit correspondre à la contrainte CHECK
                 'nom' => 'Hamdoun',
                 'prenom' => 'Souad',
                 'email' => 'HamdounSouad@gmail.com',
             ],
             [
-                'role' => 'RH',
+                'role' => 'rh', // attention, minuscule !
                 'nom' => 'Makhlouf',
                 'prenom' => 'Wafa',
                 'email' => 'Makhloufwafa@gmail.com',
@@ -54,10 +51,9 @@ class sttafSeeder extends Seeder
                     'prenom' => $staffData['prenom'],
                 ]);
 
-                // Affiche le mot de passe généré pour le noter
+                // Affiche le mot de passe généré
                 echo "Créé : {$staffData['role']} - Email: {$staffData['email']} | Password: $randomPassword\n";
             }
         }
     }
 }
-
