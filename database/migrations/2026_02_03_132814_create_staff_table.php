@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('role', ['manager', 'rh']);
+            $table->enum('role', ['manager', 'rh','Manager','MANAGER','RH','Rh']);
             $table->string('nom');
             $table->string('prenom');
             $table->timestamps();
