@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class ChangePasswordController extends Controller
 {
-    public function setPassword(Request $request)
+    public function setPassword(ChangePasswordRequest $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',

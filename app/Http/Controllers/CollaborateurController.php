@@ -2,128 +2,115 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CollaborateurRequestRules;
+use App\Http\Requests\ModifierCollaborateurRequest;
 use App\Models\Collaborateur;
-use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class CollaborateurController extends Controller
 {
-    //cree un collaborateur 
-    public function ajouter(Request $request){
-        $request->validate([
-            'email'=>'required|email|unique:users,email',
-            'nom'=>'required|string',
-            'prenom'=>'required|string',
-            'numero_telephone'=>['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-            'poste'=>'required|string',
-            'etat'=>'required|string|in:encours,terminer,Terminer,Encours',
-            ],
-            ['numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678']);
-        $password=Str::random(8);
-        $user=User::create([
-            'email'=>$request->email,
-            'password'=>Hash::make($password),
-            'role'=>'collaborateur',
-            
+    // Créer un collaborateur
+    public function ajouter(CollaborateurRequestRules $request)
+    {
+        $password = Str::random(8);
+
+        $user = User::create([
+            'email' => $request->email,
+            'password' => Hash::make($password),
+            'role' => 'collaborateur',
         ]);
-        $collab=Collaborateur::create([
-            'user_id'=>$user->id,
-            'nom'=>$request->nom,
-            'prenom'=>$request->prenom,
-            'numero_telephone'=>$request->numero_telephone,
-            'poste'=>$request->poste,
-            'etat'=>$request->etat ?? 'encours',
+
+        $collab = Collaborateur::create([
+            'user_id' => $user->id,
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'numero_telephone' => $request->numero_telephone,
+            'poste' => $request->poste,
+            'etat' => $request->etat ?? 'encours',
         ]);
-        //retourner email+password 
+
         return response()->json([
-            'message'=>'Collaborateur créé avec succès',
-            'collaborateur'=>$collab,
-            'user'=>[
-                'email'=>$user->email,
-                'password_temporaire'=>$password
+            'message' => 'Collaborateur créé avec succès',
+            'collaborateur' => $collab,
+            'user' => [
+                'email' => $user->email,
+                'password_temporaire' => $password
             ]
-        ],201);
-        $passetat=true;
-    }
-    //get
-    public function getbynometprenom(Request $request){
-        $request->validate([
-            'nom'=>'required|string',
-            'prenom'=>'required|string',
-        ]);
-        $collab=Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-                             ->where('nom',$request->nom)
-                             ->where('prenom',$request->prenom)
-                             ->select('collaborateurs.*', 'users.email')
-                             ->get();
-        if ($collab->isEmpty()) {
-        return response()->json([
-            'message' => 'Collaborateur non trouvé'
-        ], 404);
+        ], 201);
     }
 
-    return response()->json($collab);
-}
-public function getbyetat(Request $request){
-    $request->validate([
-        'etat'=>'required|string',
-    ]);
-    $collab=Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-                         ->where('etat',$request->etat)
-                          ->select('collaborateurs.*', 'users.email')
-                          ->get();
-    if ($collab->isEmpty()) {
-        return response()->json([
-            'message' => 'Collaborateur non trouvé'
-        ], 404);
-}else{
-    return response()->json($collab);
-}
-}
-public function getall(){
-    $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-                            ->select('collaborateurs.*', 'users.email')
-                            ->get();
-    if($collab->isEmpty()){
-        return response()->json()([
-            'message'=>'collaborateur non trouvé'
-        ],404);
-    }else{
+    // Rechercher par nom et prénom
+    public function getbynometprenom(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+        ]);
+
+        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+            ->where('nom', $request->nom)
+            ->where('prenom', $request->prenom)
+            ->select('collaborateurs.*', 'users.email')
+            ->get();
+
+        if ($collab->isEmpty()) {
+            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+        }
+
         return response()->json($collab);
     }
-}
-//update
-public function modifiercollaborateur(Request $request,$id){
-    $request->validate([
-        'etat'=>'sometimes|string|in:encours,terminer,Terminer,Encours',
-        'poste'=>'sometimes|string',
-        'numero_telephone'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-    ],
-    ['numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678']);  
-    $collab = Collaborateur::find($id);
-    
-    if(!$collab){
+
+    // Rechercher par état
+    public function getbyetat(Request $request)
+    {
+        $request->validate([
+            'etat' => 'required|string',
+        ]);
+
+        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+            ->where('etat', $request->etat)
+            ->select('collaborateurs.*', 'users.email')
+            ->get();
+
+        if ($collab->isEmpty()) {
+            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+        }
+
+        return response()->json($collab);
+    }
+
+    // Lister tous les collaborateurs
+    public function getall()
+    {
+        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
+            ->select('collaborateurs.*', 'users.email')
+            ->get();
+
+        if ($collab->isEmpty()) {
+            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+        }
+
+        return response()->json($collab);
+    }
+
+    // Modifier un collaborateur
+    public function modifiercollaborateur(ModifierCollaborateurRequest $request, $id)
+    {
+        $collab = Collaborateur::find($id);
+
+        if (!$collab) {
+            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+        }
+
+        $collab->fill($request->only(['poste', 'numero_telephone', 'etat']));
+        $collab->save();
+
         return response()->json([
-            'message' => 'Collaborateur non trouvé'
-        ], 404);
+            'message' => 'Collaborateur modifié avec succès',
+            'collaborateur' => $collab
+        ]);
     }
-
-    if($request->has('poste')){
-        $collab->poste=$request->poste;
-    }
-    if($request->has('numero_telephone')){
-        $collab->numero_telephone=$request->numero_telephone;
-    }
-    if($request->has('etat')){
-        $collab->etat=$request->etat;
-    }
-    $collab->save();
-    return response()->json([
-        'message'=>'colllaborateur modifié avec succès',
-        'collaborateur'=>$collab
-    ]); 
-}
-
 }

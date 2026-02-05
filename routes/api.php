@@ -5,6 +5,7 @@ use App\Http\Controllers\CollaborateurController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
+use App\Models\User;
 
 Route::middleware(['auth', 'role:RH'])->group(function () {
 
@@ -18,3 +19,5 @@ Route::post('/staff', [StaffController::class, 'store']);
 });
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/set-password', [ChangePasswordController::class, 'setPassword']);
+
+Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
