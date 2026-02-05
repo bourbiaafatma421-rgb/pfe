@@ -12,19 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role');
+            $table->boolean('password_changed')->default(false)->after('role');
         });
     }
-    
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-            $table->string('name')->after('email');
+            $table->dropColumn('password_changed');
         });
     }
 };

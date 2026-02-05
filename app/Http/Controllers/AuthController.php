@@ -24,7 +24,12 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-
+        if (!$user->active) {
+            Auth::logout();
+            return response()->json([
+                'message' => 'Compte désactivé. Contactez l’administrateur.'
+            ], 403);
+        }
         // Ici, tu peux renvoyer les infos et le rôle
         return response()->json([
             'message' => 'Connexion réussie',
