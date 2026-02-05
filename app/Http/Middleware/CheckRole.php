@@ -20,6 +20,7 @@ class CheckRole
     return response()->json(['message' => 'Non authentifié'], 401);
         }
         //vérifie si le compte activer ou non 
+        $user = Auth::user();
         if (isset($user->active) && !$user->active) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Compte désactivé'], 403);
