@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CollaborateurRequestRules extends FormRequest
+class ModifierCollaborateurRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,15 +21,12 @@ class CollaborateurRequestRules extends FormRequest
      */
     public function rules(): array
     {
-        return [ 'email' => 'required|email|unique:users,email',
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-            'poste' => 'required|string',
-            'etat' => 'required|string|in:encours,terminer,Terminer,Encours',
-        ];
+        return [
+        'etat'=>'sometimes|string|in:encours,terminer,Terminer,Encours',
+        'poste'=>'sometimes|string',
+        'numero_telephone'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+    ];
     }
-
     public function messages()
     {
         return [

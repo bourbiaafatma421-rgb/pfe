@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Http\Requests\AjoutStaffRequest;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,42 +21,38 @@ class StaffController extends Controller
     }
 
     // Ajouter un staff (manager ou RH)
-    public function store(Request $request)
+    public function store(AjoutStaffRequest $request)
     {
-         $request->validate([
-        'email' => 'required|email|unique:users,email',
-        'nom' => 'required|string',
-        'prenom' => 'required|string',
-        'role' => 'required|in:manager,rh',
-    ]);
+     $data = $request->validated();
 
     // Vérifier qu'on n'a pas déjà ce rôle
-    $existe = Staff::where('role', $request->role)->exists();
-    if ($existe) {
+    if (Staff::where('role', $data['role'])->exists()) {
         return response()->json([
             'message' => 'Ce rôle existe déjà'
         ], 409);
     }
 
-    // Créer l'utilisateur correspondant
+    // Mot de passe temporaire
     $password = Str::random(8);
+
+    // Création utilisateur
     $user = User::create([
-        'email' => $request->email,
+        'email' => $data['email'],
         'password' => Hash::make($password),
-        'role' => $request->role, // respect de la contrainte PostgreSQL
+        'role' => $data['role'],
         'active' => 1,
     ]);
 
-    // Créer le staff
-    $staff = Staff::create([
+    // Création staff
+    Staff::create([
         'user_id' => $user->id,
-        'role' => $request->role,
-        'nom' => $request->nom,
-        'prenom' => $request->prenom,
+        'role' => $data['role'],
+        'nom' => $data['nom'],
+        'prenom' => $data['prenom'],
     ]);
 
     return response()->json([
-        'message' => "Staff ({$request->role}) ajouté avec succès",
+        'message' => "Staff ({$data['role']}) ajouté avec succès",
         'user' => [
             'email' => $user->email,
             'password_temporaire' => $password
