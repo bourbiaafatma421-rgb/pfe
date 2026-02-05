@@ -39,15 +39,25 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+    'email_verified_at' => 'datetime',
+    'password' => 'hashed',
+];
     public function collaborateur(){
-        return $this->hasOne(collaborateur::class);
+        return $this->hasOne(Collaborateur::class);
     }
-    
+    public function isCollaborateur()
+    {
+        return $this->role === 'collaborateur';
+    }
+
+    public function isRh()
+    {
+        return $this->role === 'rh';
+    }
+
+    public function isManager()
+    {
+        return $this->role === 'manager';
+    }
 }
