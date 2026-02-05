@@ -15,6 +15,7 @@ class CollaborateurController extends Controller
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request)
     {
+        
         $password = Str::random(8);
 
         $user = User::create([
