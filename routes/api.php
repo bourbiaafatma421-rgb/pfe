@@ -15,4 +15,6 @@ Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
 Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifiercollaborateur']);
 Route::get('/staff', [StaffController::class, 'index']);
 Route::post('/staff', [StaffController::class, 'store']);
+});
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/set-password', [ChangePasswordController::class, 'setPassword']);
