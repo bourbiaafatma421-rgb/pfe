@@ -19,6 +19,14 @@ class CheckRole
        if (!Auth::check()) {
     return response()->json(['message' => 'Non authentifié'], 401);
         }
+        //vérifie si le compte activer ou non 
+        if (isset($user->active) && !$user->active) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Compte désactivé'], 403);
+            }
+            return redirect()->route('login')->with('error', 'Compte désactivé');
+        }
+
         if (!in_array(Auth::user()->role, $roles)) {
             return response()->json(['message' => 'Accès interdit'], 403);
         }
