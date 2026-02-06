@@ -5,7 +5,6 @@ use App\Http\Controllers\CollaborateurController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
-use App\Models\User;
 use App\Http\Controllers\ProfileController;
 
 Route::middleware(['auth:sanctum', 'role:rh'])->group(function () {
