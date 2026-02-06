@@ -15,7 +15,12 @@ class Collaborateur extends Model
     'date_recrutement',
     'etat'
    ];
+   protected $appends = ['email'];
+   protected $hidden = ['user_id', 'user'];
    public function user(){
     return $this->belongsTo(User::class);
+   }
+   public function getEmailAttribute(){
+        return $this->user?->email;
    }
 }

@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
 use App\Models\User;
 
-Route::middleware(['auth', 'role:RH'])->group(function () {
+
 
 Route::post('/collaborateur/ajouter', [CollaborateurController::class, 'ajouter']);
 Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
@@ -17,5 +17,6 @@ Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifierco
 Route::get('/staff', [StaffController::class, 'index']);
 Route::post('/staff', [StaffController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login']);
-});
-Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
+
+
+

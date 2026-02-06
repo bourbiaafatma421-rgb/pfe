@@ -50,11 +50,10 @@ class CollaborateurController extends Controller
             'prenom' => 'required|string',
         ]);
 
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->where('nom', $request->nom)
-            ->where('prenom', $request->prenom)
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
+        $collab = Collaborateur::with('user')
+                                ->where('nom', $request->nom)
+                                ->where('prenom', $request->prenom)
+                                ->get();
 
         if ($collab->isEmpty()) {
             return response()->json(['message' => 'Collaborateur non trouvé'], 404);
@@ -70,10 +69,9 @@ class CollaborateurController extends Controller
             'etat' => 'required|string',
         ]);
 
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->where('etat', $request->etat)
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
+    $collab = Collaborateur::with('user')
+                            ->where('etat', $request->etat)
+                            ->get();
 
         if ($collab->isEmpty()) {
             return response()->json(['message' => 'Collaborateur non trouvé'], 404);
@@ -85,10 +83,7 @@ class CollaborateurController extends Controller
     // Lister tous les collaborateurs
     public function getall()
     {
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
-
+        $collab = Collaborateur::with('user')->get();
         if ($collab->isEmpty()) {
             return response()->json(['message' => 'Collaborateur non trouvé'], 404);
         }
