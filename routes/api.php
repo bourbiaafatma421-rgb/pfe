@@ -10,10 +10,11 @@ use App\Models\User;
 
 
 Route::post('/collaborateur/ajouter', [CollaborateurController::class, 'ajouter']);
-Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
-Route::get('/collaborateur/getbyetat', [CollaborateurController::class, 'getbyetat']);
-Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
+//Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
+//Route::get('/collaborateur/getbyetat', [CollaborateurController::class, 'getbyetat']);
+//Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
 Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifiercollaborateur']);
+Route::get('/collaborateur', [CollaborateurController::class, 'index']);
 Route::get('/staff', [StaffController::class, 'index']);
 Route::post('/staff', [StaffController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login']);

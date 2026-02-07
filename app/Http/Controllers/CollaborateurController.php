@@ -7,14 +7,19 @@ use App\Http\Requests\ModifierCollaborateurRequest;
 use App\Models\Collaborateur;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+
 
 class CollaborateurController extends Controller
 {
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request)
     {
+        DB::beginTransaction();
+        try{
         $password = Str::random(8);
 
         $user = User::create([
@@ -31,65 +36,42 @@ class CollaborateurController extends Controller
             'poste' => $request->poste,
             'etat' => $request->etat ?? 'encours',
         ]);
-
+        DB::commit();
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
-            'collaborateur' => $collab,
-            'user' => [
-                'email' => $user->email,
-                'password_temporaire' => $password
+            'email' => $user->email,
+            'password_temporaire' => $password
             ]
-        ], 201);
-    }
-
-    // Rechercher par nom et prénom
-    public function getbynometprenom(Request $request)
-    {
-        $request->validate([
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-        ]);
-
-        $collab = Collaborateur::with('user')
-                                ->where('nom', $request->nom)
-                                ->where('prenom', $request->prenom)
-                                ->get();
-
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+        , 201);
+        }catch(\Exception $e){
+            DB::rollBack();
+        return response()->json([
+            'message' => 'Erreur lors de la création'
+        ], 500);
         }
-
-        return response()->json($collab);
     }
 
-    // Rechercher par état
-    public function getbyetat(Request $request)
-    {
-        $request->validate([
-            'etat' => 'required|string',
-        ]);
+   public function index(Request $request)
+{
+    $query = Collaborateur::with('user');
 
-    $collab = Collaborateur::with('user')
-                            ->where('etat', $request->etat)
-                            ->get();
-
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        return response()->json($collab);
+    if ($request->nom) {
+        $query->where('nom', $request->nom);
     }
 
-    // Lister tous les collaborateurs
-    public function getall()
-    {
-        $collab = Collaborateur::with('user')->get();
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        return response()->json($collab);
+    if ($request->prenom) {
+        $query->where('prenom', $request->prenom);
     }
+
+    if ($request->etat) {
+        $query->where('etat', $request->etat);
+    }
+
+    $collab = $query->paginate(10)->items();
+
+    return response()->json($collab);
+}
+
 
     // Modifier un collaborateur
     public function modifiercollaborateur(ModifierCollaborateurRequest $request, $id)
