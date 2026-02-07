@@ -7,17 +7,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
 use App\Http\Controllers\ProfileController;
 
-Route::middleware(['auth:sanctum', 'role:rh'])->group(function () {
-
-    Route::post('/collaborateur/ajouter', [CollaborateurController::class, 'ajouter']);
-    Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
-    Route::get('/collaborateur/getbyetat', [CollaborateurController::class, 'getbyetat']);
-    Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
-    Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifiercollaborateur']);
-    Route::get('/rh/profil', [ProfileController::class, 'show']);   
-    Route::patch('/rh/profil', [ProfileController::class, 'update']); 
-    
-});
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post(
     '/set-password',
