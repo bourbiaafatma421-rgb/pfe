@@ -16,6 +16,7 @@ class Collaborateur extends Model
     'etat'
    ];
    protected $appends = ['email'];
+   protected $with = ['user'];
    protected $hidden = ['user_id', 'user'];
    public function user(){
     return $this->belongsTo(User::class);

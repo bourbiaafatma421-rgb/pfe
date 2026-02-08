@@ -11,10 +11,16 @@ use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
 
 
-class CollaborateurController extends Controller
+
+class CollaborateurController extends BaseController
 {
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request)
     {
@@ -73,21 +79,23 @@ class CollaborateurController extends Controller
 }
 
 
-    // Modifier un collaborateur
-    public function modifiercollaborateur(ModifierCollaborateurRequest $request, $id)
-    {
-        $collab = Collaborateur::find($id);
+   public function modifiercollaborateur(ModifierCollaborateurRequest $request, Collaborateur $collaborateur)
+{
+    $this->authorize('update', $collaborateur);
 
-        if (!$collab) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        $collab->fill($request->only(['poste', 'numero_telephone', 'etat']));
-        $collab->save();
-
-        return response()->json([
-            'message' => 'Collaborateur modifié avec succès',
-            'collaborateur' => $collab
-        ]);
+    $user = auth()->guard()->user();
+    if ($user->role === 'rh') {
+        $collaborateur->update($request->only(['poste', 'numero_telephone', 'etat']));
+        
+    } elseif ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
+        $collaborateur->update($request->only(['numero_telephone']));
     }
+
+    return response()->json([
+        'message' => 'Collaborateur modifié avec succès',
+        'collaborateur' => $collaborateur
+    ]);
+}
+
+
 }
