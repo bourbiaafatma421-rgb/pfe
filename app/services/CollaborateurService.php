@@ -62,12 +62,17 @@ public function getCollaborateurs($filters)
 
     return $query->paginate(10);
 }
-public function updatecollaborateur($collaborateur, $request, $user){
-    if ($user->role === 'rh') {
-        $collaborateur->update($request->only(['poste', 'numero_telephone', 'etat']));
-        
-    } elseif ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
-        $collaborateur->update($request->only(['numero_telephone']));
+public function updatecollaborateur($collaborateur, Array $data, $user){
+     if ($user->role === 'rh') {
+        $collaborateur->update([
+            'poste' => $data['poste'] ?? $collaborateur->poste,
+            'numero_telephone' => $data['numero_telephone'] ?? $collaborateur->numero_telephone,
+            'etat' => $data['etat'] ?? $collaborateur->etat,
+        ]);
+    }elseif ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
+        $collaborateur->update([
+            'numero_telephone' => $data['numero_telephone'] ?? $collaborateur->numero_telephone,
+        ]);
     }
     return $collaborateur;
 
