@@ -18,14 +18,12 @@ class CollaborateurController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     protected $service;
-    public function __construct(CollaborateurService $service)
-    {
+    public function __construct(CollaborateurService $service){
         $this->service = $service;
     }
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request){
         $result = $this->service->createCollaborateur($request->validated());
-
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
             'email' => $result['email'],
@@ -33,7 +31,7 @@ class CollaborateurController extends BaseController
         ], 201);
     }
     //get
-   public function index(Request $request){
+    public function index(Request $request){
     $collab = $this->service->getCollaborateurs($request->all());
     return response()->json($collab);
 }
