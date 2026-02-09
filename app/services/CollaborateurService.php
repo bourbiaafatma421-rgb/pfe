@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\ModifierCollaborateurRequest;
 use App\Models\User;
 use App\Models\Collaborateur;
 use Illuminate\Support\Facades\Hash;
@@ -43,4 +44,33 @@ class CollaborateurService{
             throw $e;
         }
 }
+public function getCollaborateurs($filters)
+{
+    $query = Collaborateur::with('user');
+
+    if (!empty($filters['nom'])) {
+        $query->where('nom', $filters['nom']);
+    }
+
+    if (!empty($filters['prenom'])) {
+        $query->where('prenom', $filters['prenom']);
+    }
+
+    if (!empty($filters['etat'])) {
+        $query->where('etat', $filters['etat']);
+    }
+
+    return $query->paginate(10);
+}
+public function updatecollaborateur($collaborateur, $request, $user){
+    if ($user->role === 'rh') {
+        $collaborateur->update($request->only(['poste', 'numero_telephone', 'etat']));
+        
+    } elseif ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
+        $collaborateur->update($request->only(['numero_telephone']));
+    }
+    return $collaborateur;
+
+}
+
 }
