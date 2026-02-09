@@ -13,6 +13,9 @@ class CollaborateurPolicy
      */
     public function viewAny(User $user): bool
     {
+        if($user->role === 'rh' || $user->role === 'Manager'){
+            return true;
+        }
         return false;
     }
 
@@ -21,6 +24,9 @@ class CollaborateurPolicy
      */
     public function view(User $user, Collaborateur $collaborateur): bool
     {
+       if($user->role === 'rh' || $user->role === 'Manager'){
+            return true;
+        }
         return false;
     }
 
@@ -53,7 +59,7 @@ class CollaborateurPolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Collaborateur $collaborateur): bool
-    {
+    {   
         return false;
     }
 

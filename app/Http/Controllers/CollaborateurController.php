@@ -17,8 +17,7 @@ use Illuminate\Routing\Controller as BaseController;
 class CollaborateurController extends BaseController{
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     protected $service;
-    public function __construct(CollaborateurService $service)
-    {
+    public function __construct(CollaborateurService $service){
         $this->service = $service;
     }
     // Créer un collaborateur
@@ -35,8 +34,9 @@ class CollaborateurController extends BaseController{
             'password_temporaire' => $result['password']
         ], 201);
     }
+    }
     //get
-   public function index(Request $request){
+    public function index(Request $request){
     $collab = $this->service->getCollaborateurs($request->all());
     return response()->json($collab);
 }
