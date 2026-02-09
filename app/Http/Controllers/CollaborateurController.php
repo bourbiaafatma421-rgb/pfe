@@ -35,40 +35,16 @@ class CollaborateurController extends BaseController{
             'password_temporaire' => $result['password']
         ], 201);
     }
-   public function index(Request $request)
-{
-    $query = Collaborateur::with('user');
-
-    if ($request->nom) {
-        $query->where('nom', $request->nom);
-    }
-
-    if ($request->prenom) {
-        $query->where('prenom', $request->prenom);
-    }
-
-    if ($request->etat) {
-        $query->where('etat', $request->etat);
-    }
-
-    $collab = $query->paginate(10)->items();
-
+    //get
+   public function index(Request $request){
+    $collab = $this->service->getCollaborateurs($request->all());
     return response()->json($collab);
 }
-
-
-   public function modifiercollaborateur(ModifierCollaborateurRequest $request, Collaborateur $collaborateur)
-{
+   //modifier
+   public function modifiercollaborateur(ModifierCollaborateurRequest $request, Collaborateur $collaborateur){
     $this->authorize('update', $collaborateur);
-
     $user = auth()->guard()->user();
-    if ($user->role === 'rh') {
-        $collaborateur->update($request->only(['poste', 'numero_telephone', 'etat']));
-        
-    } elseif ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
-        $collaborateur->update($request->only(['numero_telephone']));
-    }
-
+    $collaborateur=$this->service->updatecollaborateur($collaborateur,$request,$user);
     return response()->json([
         'message' => 'Collaborateur modifié avec succès',
         'collaborateur' => $collaborateur
