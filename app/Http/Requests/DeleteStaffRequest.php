@@ -4,13 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ChangePasswordRequest extends FormRequest
+class DeleteStaffRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
+    public function authorize()
     {
+        // Seul le manager peut supprimer un staff
         return true;
     }
 
@@ -21,9 +22,6 @@ class ChangePasswordRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-           'new_password' => 'required|string|min:8|confirmed',
-
-        ];
+        return [];
     }
 }

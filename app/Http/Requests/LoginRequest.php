@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AjoutStaffRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return true;;
     }
 
     /**
@@ -22,17 +22,19 @@ class AjoutStaffRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:users,email',
-            'nom' => 'required|string|max:100',
-            'prenom' => 'required|string|max:100',
-            //'role' => 'required|in:rh', // Seul le rôle RH peut être ajouté ici
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
         ];
     }
+
+    // Messages personnalisés (optionnel mais pro)
     public function messages(): array
     {
         return [
-            'email.unique' => 'Un utilisateur avec cet email existe déjà.',
-            'role.in' => 'Seul le rôle RH peut être créé via ce endpoint.',
+            'email.required' => 'Email obligatoire',
+            'email.email' => 'Format email invalide',
+            'password.required' => 'Mot de passe obligatoire',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
         ];
     }
 }

@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
+
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'active',
+        'password_changed',
     ];
 
     /**
@@ -40,9 +44,11 @@ class User extends Authenticatable
      * @return array<string, string>
      */
     protected $casts = [
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-];
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'active' => 'boolean',
+        'password_changed' => 'boolean',
+    ];
     public function collaborateur(){
         return $this->hasOne(Collaborateur::class);
     }
@@ -53,11 +59,11 @@ class User extends Authenticatable
 
     public function isRh()
     {
-        return $this->role === 'rh';
+        return strtolower($this->role) === 'rh';
     }
 
     public function isManager()
     {
-        return $this->role === 'manager';
+        return strtolower($this->role) === 'manager';
     }
 }

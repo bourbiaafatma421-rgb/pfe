@@ -4,11 +4,11 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AjoutStaffRequest extends FormRequest
+class ModifierStaffRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     */
+    */
     public function authorize(): bool
     {
         return true;
@@ -21,18 +21,14 @@ class AjoutStaffRequest extends FormRequest
      */
     public function rules(): array
     {
+        $staff = \App\Models\Staff::find($this->route('id'));
+        $userId = $staff ? $staff->user_id : null;
         return [
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:users,email,' . $userId,
             'nom' => 'required|string|max:100',
             'prenom' => 'required|string|max:100',
-            //'role' => 'required|in:rh', // Seul le rôle RH peut être ajouté ici
-        ];
-    }
-    public function messages(): array
-    {
-        return [
-            'email.unique' => 'Un utilisateur avec cet email existe déjà.',
-            'role.in' => 'Seul le rôle RH peut être créé via ce endpoint.',
+            'role' => 'required|in:rh,MANAGER',
+            'active' => 'nullable|boolean'
         ];
     }
 }

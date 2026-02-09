@@ -6,27 +6,22 @@ use App\Http\Requests\ChangePasswordRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+//use Illuminate\Support\Facades\Auth;
 
 class ChangePasswordController extends Controller
 {
     public function setPassword(ChangePasswordRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'new_password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Utilisateur non trouvé'
-            ], 404);
-        }
+        $user = $request->user();
 
         if (!$user->active) {
             return response()->json([
                 'message' => 'Compte désactivé'
+            ], 403);
+        }
+        if ($user->password_changed) {
+            return response()->json([
+                'message' => 'Le mot de passe a déjà été défini'
             ], 403);
         }
 
@@ -34,8 +29,10 @@ class ChangePasswordController extends Controller
         $user->password_changed = true;
         $user->save();
 
+        $user->tokens()->delete();
+        
         return response()->json([
-            'message' => 'Mot de passe défini avec succès. Vous pouvez maintenant vous connecter.'
+            'message' => 'Mot de passe défini avec succès',
         ], 200);
     }
 }

@@ -7,17 +7,26 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
 use App\Models\User;
 
-Route::middleware(['auth', 'role:RH'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:RH'])->group(function () {
 
 Route::post('/collaborateur/ajouter', [CollaborateurController::class, 'ajouter']);
 Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
 Route::get('/collaborateur/getbyetat', [CollaborateurController::class, 'getbyetat']);
 Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
 Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifiercollaborateur']);
-Route::get('/staff', [StaffController::class, 'index']);
-Route::post('/staff', [StaffController::class, 'store']);
+
 });
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/set-password', [ChangePasswordController::class, 'setPassword']);
+Route::middleware('auth:sanctum')->post(
+    '/set-password',
+    [ChangePasswordController::class, 'setPassword']
+);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
-Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
+Route::middleware(['auth:sanctum', 'role:MANAGER'])->group(function () {
+    Route::get('/staff', [StaffController::class, 'index']); 
+    Route::delete('/staff/{id}', [StaffController::class, 'destroy']);
+    Route::post('/staff', [StaffController::class, 'store']);
+    Route::post('/init/manager', [StaffController::class, 'storeManager']);
+    Route::patch('/staff/{id}', [StaffController::class, 'update']);
+});
