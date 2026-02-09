@@ -24,9 +24,6 @@ class CollaborateurPolicy
      */
     public function view(User $user, Collaborateur $collaborateur): bool
     {
-       if($user->role === 'rh' || $user->role === 'Manager'){
-            return true;
-        }
         return false;
     }
 
