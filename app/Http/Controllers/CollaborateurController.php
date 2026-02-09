@@ -41,7 +41,7 @@ class CollaborateurController extends BaseController
    public function modifiercollaborateur(ModifierCollaborateurRequest $request, Collaborateur $collaborateur){
     $this->authorize('update', $collaborateur);
     $user = auth()->guard()->user();
-    $collaborateur=$this->service->updatecollaborateur($collaborateur,$request,$user);
+    $collaborateur=$this->service->updatecollaborateur($collaborateur,$request->validated(),$user);
     return response()->json([
         'message' => 'Collaborateur modifié avec succès',
         'collaborateur' => $collaborateur
