@@ -21,12 +21,8 @@ class CollaborateurController extends BaseController{
         $this->service = $service;
     }
     // Créer un collaborateur
-    public function ajouter(CollaborateurRequestRules $request)
-    {
-
-        DB::beginTransaction();
-        try{
-        $password = Str::random(8);
+    public function ajouter(CollaborateurRequestRules $request){
+        $this->authorize('create',Collaborateur::class);
         $result = $this->service->createCollaborateur($request->validated());
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
@@ -37,6 +33,7 @@ class CollaborateurController extends BaseController{
     }
     //get
     public function index(Request $request){
+    $this->authorize('viewAny',Collaborateur::class);
     $collab = $this->service->getCollaborateurs($request->all());
     return response()->json($collab);
 }
