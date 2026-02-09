@@ -6,11 +6,7 @@ use App\Http\Requests\CollaborateurRequestRules;
 use App\Http\Requests\ModifierCollaborateurRequest;
 use App\Models\Collaborateur;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Exception;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
+use App\Services\CollaborateurService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -21,42 +17,22 @@ use Illuminate\Routing\Controller as BaseController;
 class CollaborateurController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    protected $service;
+    public function __construct(CollaborateurService $service)
+    {
+        $this->service = $service;
+    }
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request)
     {
-        DB::beginTransaction();
-        try{
-        $password = Str::random(8);
+        $result = $this->service->createCollaborateur($request->validated());
 
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($password),
-            'role' => 'collaborateur',
-        ]);
-
-        $collab = Collaborateur::create([
-            'user_id' => $user->id,
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'numero_telephone' => $request->numero_telephone,
-            'poste' => $request->poste,
-            'etat' => $request->etat ?? 'encours',
-        ]);
-        DB::commit();
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
-            'email' => $user->email,
-            'password_temporaire' => $password
-            ]
-        , 201);
-        }catch(\Exception $e){
-            DB::rollBack();
-        return response()->json([
-            'message' => 'Erreur lors de la création'
-        ], 500);
-        }
+            'email' => $result['email'],
+            'password_temporaire' => $result['password']
+        ], 201);
     }
-
    public function index(Request $request)
 {
     $query = Collaborateur::with('user');
