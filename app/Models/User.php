@@ -21,15 +21,25 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'role_id',
+        'nom',
+        'prenom',
         'email',
         'nom',
         'prenom',
         'password',
+<<<<<<< HEAD
         'role_id',
         'active',
         'date_recrutement',
         'numero_telephone',
         'password_changed',
+=======
+        'numero_telephone',
+        'active',
+        'date_recrutement',
+        'password_changed'
+>>>>>>> 5644ad7 (amelioration en cours)
     ];
 
     /**
@@ -48,6 +58,7 @@ class User extends Authenticatable
      * @return array<string, string>
      */
     protected $casts = [
+<<<<<<< HEAD
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'active' => 'boolean',
@@ -55,15 +66,34 @@ class User extends Authenticatable
         'date_recrutement'=>'date',
     ];
     
+=======
+    'email_verified_at' => 'datetime',
+    'password' => 'hashed',
+];
+>>>>>>> 5644ad7 (amelioration en cours)
     public function role(){
         return $this->belongsTo(Role::class);
     }
     public function hasRole(string $roleName): bool
     {
+<<<<<<< HEAD
         if (!$this->role) {
             return false;
         }
 
         return strtolower($this->role->nom) === strtolower($roleName);
+=======
+        return $this->role?->name === 'new_collaborateur';
+    }
+
+    public function isRh()
+    {
+        return $this->role?->name  === 'rh';
+    }
+
+    public function isManager()
+    {
+        return $this->role?->name === 'manager';
+>>>>>>> 5644ad7 (amelioration en cours)
     }
 }
