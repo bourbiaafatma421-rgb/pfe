@@ -2,10 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CollaborateurController;
-use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ChangePasswordController; 
-use App\Models\User;
 
 Route::middleware('auth:sanctum')->post(
     '/set-password',
