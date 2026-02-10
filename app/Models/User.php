@@ -19,9 +19,15 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'role_id',
+        'nom',
+        'prenom',
         'email',
         'password',
-        'role',
+        'numero_telephone',
+        'active',
+        'date_recrutement',
+        'password_changed'
     ];
 
     /**
@@ -43,21 +49,21 @@ class User extends Authenticatable
     'email_verified_at' => 'datetime',
     'password' => 'hashed',
 ];
-    public function collaborateur(){
-        return $this->hasOne(Collaborateur::class);
+    public function role(){
+        return $this->belongsTo(Role::class);
     }
     public function isCollaborateur()
     {
-        return $this->role === 'collaborateur';
+        return $this->role?->name === 'new_collaborateur';
     }
 
     public function isRh()
     {
-        return $this->role === 'rh';
+        return $this->role?->name  === 'rh';
     }
 
     public function isManager()
     {
-        return $this->role === 'manager';
+        return $this->role?->name === 'manager';
     }
 }
