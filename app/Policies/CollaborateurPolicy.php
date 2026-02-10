@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Collaborateur;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -13,7 +14,7 @@ class CollaborateurPolicy
      */
     public function viewAny(User $user): bool
     {
-        if($user->role === 'rh' || $user->role === 'Manager'){
+        if($user->role?->name === 'rh' || $user->role?->name === 'Manager'){
             return true;
         }
         return false;
@@ -22,9 +23,12 @@ class CollaborateurPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Collaborateur $collaborateur): bool
+    public function view(User $user, User $collaborateur): bool
     {
-        return false;
+        if($user->role?->name === 'rh') {
+            return true;
+        }
+        return $user->id === $collaborateur->id;
     }
 
     /**
@@ -32,21 +36,21 @@ class CollaborateurPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'rh';
+        return $user->role?->name === 'rh';
     }
 
     /**
      * Determine whether the user can update the model.
      */
-     public function update(User $user, Collaborateur $collaborateur)
+     public function update(User $user,User $collaborateur)
     {
         // RH peut modifier tous les collaborateurs
-        if ($user->role === 'rh') {
+        if ($user->role?->name === 'rh') {
             return true;
-        }
+    }
 
         // Collaborateur peut uniquement modifier SON numéro de téléphone
-        if ($user->role === 'collaborateur' && $user->id === $collaborateur->user_id) {
+        if ($user->role?->name === 'new_collaborateur' && $user->id === $collaborateur->id) {
             return true;
         }
         return false;
@@ -55,7 +59,7 @@ class CollaborateurPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Collaborateur $collaborateur): bool
+    public function delete(User $user, User $collaborateur): bool
     {   
         return false;
     }
@@ -63,7 +67,7 @@ class CollaborateurPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Collaborateur $collaborateur): bool
+    public function restore(User $user, User $collaborateur): bool
     {
         return false;
     }
@@ -71,7 +75,7 @@ class CollaborateurPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Collaborateur $collaborateur): bool
+    public function forceDelete(User $user, User $collaborateur): bool
     {
         return false;
     }

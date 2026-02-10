@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CollaborateurRequestRules;
 use App\Http\Requests\ModifierCollaborateurRequest;
-use App\Models\Collaborateur;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\CollaborateurService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -23,7 +23,7 @@ class CollaborateurController extends BaseController
     }
     // Créer un collaborateur
     public function ajouter(CollaborateurRequestRules $request){
-        $this->authorize('create',Collaborateur::class);
+        $this->authorize('create',User::class);
         $result = $this->service->createCollaborateur($request->validated());
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
@@ -31,14 +31,14 @@ class CollaborateurController extends BaseController
             'password_temporaire' => $result['password']
         ], 201);
     }
-    //get
+    //get tous les collaborateurs
     public function index(Request $request){
-    $this->authorize('viewAny',Collaborateur::class);
+    $this->authorize('viewAny',User::class);
     $collab = $this->service->getCollaborateurs($request->all());
     return response()->json($collab);
 }
    //modifier
-   public function modifiercollaborateur(ModifierCollaborateurRequest $request, Collaborateur $collaborateur){
+   public function modifiercollaborateur(ModifierCollaborateurRequest $request, User $collaborateur){
     $this->authorize('update', $collaborateur);
     $user = auth()->guard()->user();
     $collaborateur=$this->service->updatecollaborateur($collaborateur,$request->validated(),$user);
