@@ -14,11 +14,7 @@ class ChangePasswordController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->active) {
-            return response()->json([
-                'message' => 'Compte désactivé'
-            ], 403);
-        }
+        
         if ($user->password_changed) {
             return response()->json([
                 'message' => 'Le mot de passe a déjà été défini'

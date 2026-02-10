@@ -22,9 +22,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'email',
+        'nom',
+        'prenom',
         'password',
-        'role',
+        'role_id',
         'active',
+        'date_recrutement',
+        'numero_telephone',
         'password_changed',
     ];
 
@@ -48,8 +52,12 @@ class User extends Authenticatable
         'password' => 'hashed',
         'active' => 'boolean',
         'password_changed' => 'boolean',
+        'date_recrutement'=>'date',
     ];
     public function collaborateur(){
+        return $this->hasOne(Collaborateur::class);
+    }
+    public function role(){
         return $this->hasOne(Collaborateur::class);
     }
     public function isCollaborateur()

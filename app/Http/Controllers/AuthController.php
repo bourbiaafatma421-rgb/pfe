@@ -21,9 +21,9 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (!$user->active) {
-        return response()->json([
-            'message' => 'Compte désactivé'
-        ], 403);
+            return response()->json([
+                'message' => 'Compte désactivé'
+            ], 403);
         }
         // Supprimer les anciens tokens et en créer un nouveau
         $user->tokens()->delete();
@@ -53,6 +53,8 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    //pour la déconnexion
     public function logout(Request $request){
         $request->user()->tokens()->delete();
         return response()->json([

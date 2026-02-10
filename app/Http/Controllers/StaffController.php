@@ -78,8 +78,8 @@ class StaffController extends Controller
         if ($staff->user) {
             $staff->user->update([
                 'email' => $data['email'],
-                'role' => $data['role'],
-                'active' => $data['active'] ?? $staff->user->active,
+                //'role' => $data['role'],
+                //'active' => $data['active'] ?? $staff->user->active,
             ]);
         }
         return response()->json([
@@ -136,3 +136,5 @@ class StaffController extends Controller
     }
 
 }
+
+
