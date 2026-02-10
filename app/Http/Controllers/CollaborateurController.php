@@ -30,7 +30,6 @@ class CollaborateurController extends BaseController{
             'password_temporaire' => $result['password']
         ], 201);
     }
-    }
     //get
     public function index(Request $request){
     $this->authorize('viewAny',Collaborateur::class);
@@ -48,4 +47,3 @@ class CollaborateurController extends BaseController{
     ]);
 }
 }
-
