@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
     use HasFactory;
     protected $table = 'role';
     protected $fillable = ['nom'];
@@ -18,10 +19,13 @@ class Role extends Model
         return $this->hasMany(User::class);
     }
 =======
+=======
+    
+>>>>>>> b18fa01 (changement)
     protected $fillable = [
         'name',
     ];
-    public function user(){
+    public function users(){
         return $this->hasMany(User::class);
    }
 >>>>>>> 5644ad7 (amelioration en cours)
