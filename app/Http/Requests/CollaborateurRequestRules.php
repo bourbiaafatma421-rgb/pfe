@@ -27,7 +27,7 @@ class CollaborateurRequestRules extends FormRequest
             'prenom' => 'required|string',
             'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
             'date_recrutement' => 'required|date',
-            'role' => 'required|string|exists:roles,name',  
+            'role' => 'required|string',
         ];
     }
 
