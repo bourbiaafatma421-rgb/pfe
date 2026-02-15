@@ -25,7 +25,7 @@ class ChangePasswordController extends Controller
         $user->password_changed = true;
         $user->save();
 
-        $user->tokens()->delete();
+        //$user->tokens()->delete();
         
         return response()->json([
             'message' => 'Mot de passe défini avec succès',

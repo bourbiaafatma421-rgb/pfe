@@ -54,24 +54,16 @@ class User extends Authenticatable
         'password_changed' => 'boolean',
         'date_recrutement'=>'date',
     ];
-    public function collaborateur(){
-        return $this->hasOne(Collaborateur::class);
-    }
+    
     public function role(){
-        return $this->hasOne(Collaborateur::class);
+        return $this->belongsTo(Role::class);
     }
-    public function isCollaborateur()
+    public function hasRole(string $roleName): bool
     {
-        return $this->role === 'collaborateur';
-    }
+        if (!$this->role) {
+            return false;
+        }
 
-    public function isRh()
-    {
-        return strtolower($this->role) === 'rh';
-    }
-
-    public function isManager()
-    {
-        return strtolower($this->role) === 'manager';
+        return strtolower($this->role->nom) === strtolower($roleName);
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,16 +12,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('collaborateurs', function (Blueprint $table) {
-            $table->dropColumn('active'); 
-        });
+        DB::table('role')->insertOrIgnore([
+            'nom' => 'rh',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::table('collaborateurs', function (Blueprint $table) {
-            $table->boolean('active')->default(true); 
-        });
+        DB::table('role')->where('nom', 'rh')->delete();
     }
 };
-

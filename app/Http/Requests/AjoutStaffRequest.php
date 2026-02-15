@@ -23,16 +23,17 @@ class AjoutStaffRequest extends FormRequest
     {
         return [
             'email' => 'required|email|unique:users,email',
-            'nom' => 'required|string|max:100',
-            'prenom' => 'required|string|max:100',
-            //'role' => 'required|in:rh', // Seul le rôle RH peut être ajouté ici
+            'nom' => 'required|string|max:25',
+            'prenom' => 'required|string|max:25',
+            'date_recrutement' => 'required|date',
+            'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
         ];
     }
     public function messages(): array
     {
         return [
             'email.unique' => 'Un utilisateur avec cet email existe déjà.',
-            'role.in' => 'Seul le rôle RH peut être créé via ce endpoint.',
+            'numero_telephone.regex'=>'le numero de telephone doit etre au format international '
         ];
     }
 }

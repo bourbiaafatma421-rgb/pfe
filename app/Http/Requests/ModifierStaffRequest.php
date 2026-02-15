@@ -21,14 +21,16 @@ class ModifierStaffRequest extends FormRequest
      */
     public function rules(): array
     {
-        $staff = \App\Models\Staff::find($this->route('id'));
-        $userId = $staff ? $staff->user_id : null;
-        return [
-            'email' => 'required|email|unique:users,email,' . $userId,
-            'nom' => 'required|string|max:100',
-            'prenom' => 'required|string|max:100',
-            'role' => 'required|in:rh,MANAGER',
-            'active' => 'nullable|boolean'
+        $currentUser = auth()->user();
+
+        // Tous les champs autorisés pour Manager et RH
+        $rules = [
+            'nom' => 'sometimes|string|max:25',
+            'prenom' => 'sometimes|string|max:25',
+            'numero_telephone' => ['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+            'date_recrutement' => 'sometimes|date',
         ];
+
+        return $rules;
     }
 }

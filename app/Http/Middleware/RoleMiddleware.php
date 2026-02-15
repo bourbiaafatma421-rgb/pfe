@@ -13,20 +13,23 @@ class RoleMiddleware
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  mixed  ...$roles
+
      */
     public function handle(Request $request, Closure $next, ...$roles)
         {
-            // Récupérer l’utilisateur authentifié
+
             $user = $request->user();
 
             if (!$user) {
                 return response()->json(['message' => 'Non authentifié'], 401);
             }
 
-            if (!in_array($user->role, $roles)) {
+            if (!in_array(strtolower($user->role->nom ?? ''), array_map('strtolower', $roles))) {
                 return response()->json(['message' => 'Accès refusé'], 403);
             }
 
+            // L'utilisateur a le bon rôle
             return $next($request);
         }
 }
