@@ -29,17 +29,23 @@ class User extends Authenticatable
         'prenom',
         'password',
 <<<<<<< HEAD
+<<<<<<< HEAD
         'role_id',
         'active',
         'date_recrutement',
         'numero_telephone',
         'password_changed',
 =======
+=======
+>>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
         'numero_telephone',
         'active',
         'date_recrutement',
         'password_changed'
+<<<<<<< HEAD
 >>>>>>> 5644ad7 (amelioration en cours)
+=======
+>>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
     ];
 
     /**
@@ -70,12 +76,16 @@ class User extends Authenticatable
     'email_verified_at' => 'datetime',
     'password' => 'hashed',
 ];
+<<<<<<< HEAD
 >>>>>>> 5644ad7 (amelioration en cours)
+=======
+>>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
     public function role(){
         return $this->belongsTo(Role::class);
     }
     public function hasRole(string $roleName): bool
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         if (!$this->role) {
             return false;
@@ -83,6 +93,8 @@ class User extends Authenticatable
 
         return strtolower($this->role->nom) === strtolower($roleName);
 =======
+=======
+>>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
         return $this->role?->name === 'new_collaborateur';
     }
 
@@ -94,6 +106,9 @@ class User extends Authenticatable
     public function isManager()
     {
         return $this->role?->name === 'manager';
+<<<<<<< HEAD
 >>>>>>> 5644ad7 (amelioration en cours)
+=======
+>>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
     }
 }
