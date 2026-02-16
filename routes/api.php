@@ -24,20 +24,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/staff/{id}/toggle-active', [StaffController::class, 'update'])->middleware('can:update,App\Models\User');
     Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->middleware('can:delete,App\Models\User');
 });
-
 // ---------------------- Collaborateurs / RH ----------------------
 Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function () {
     Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
-    Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User');
+    Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User'); 
     Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,App\Models\User');
-
-    // Gestion des rôles (RH)
-    Route::prefix('roles')->group(function () {
-        Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\User');
-        Route::get('/', [RoleController::class, 'getall'])->middleware('can:viewAny,App\Models\User');
-        Route::patch('/{id}', [RoleController::class, 'modifier'])->middleware('can:update,App\Models\User');
-        Route::delete('/{id}', [RoleController::class, 'supprimer'])->middleware('can:delete,App\Models\User');
-    });
+});
+Route::middleware(['auth:sanctum'])->prefix('roles')->group(function () {
+    Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\Role');
+    Route::get('/', [RoleController::class, 'getall'])->middleware('can:viewAny,App\Models\Role');
+    Route::patch('/role/{role}', [RoleController::class, 'modifier'])->middleware(['auth:sanctum', 'can:update,role']); 
+    Route::delete('/{role}', [RoleController::class, 'supprimer'])->middleware('can:delete,App\Models\Role');
 });
 
 // ---------------------- Profil RH ----------------------

@@ -18,7 +18,7 @@ class StaffController extends Controller
 {
     
     // Lister tous les staffs (manager + RH)
-     
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);

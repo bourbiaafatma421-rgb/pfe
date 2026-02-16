@@ -50,12 +50,12 @@ class RoleController extends BaseController
     }
 
     // Modifier un rôle
-    public function modifier(RequestValidationRole $request, $id)
+    public function modifier(RequestValidationRole $request, Role $role)
     {
-        $this->authorize('update', Role::class);
+        $this->authorize('update', $role);
 
         try {
-            $role = $this->service->updateRole($id, $request->validated());
+            $role = $this->service->updateRole($role->id, $request->validated());
             return response()->json([
                 'message' => 'Rôle mis à jour avec succès',
                 'role' => $role
@@ -73,11 +73,11 @@ class RoleController extends BaseController
     }
 
     // Supprimer un rôle
-    public function supprimer($id)
-    {
-        $this->authorize('delete', Role::class);
+    public function supprimer(Role $role)
+    {   
+        $this->authorize('delete', $role);
         try {
-            $this->service->deleteRole($id);
+            $this->service->deleteRole($role->id);
             return response()->json(['message' => 'Rôle supprimé avec succès'], 200);
         } catch (RoleProtectedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
