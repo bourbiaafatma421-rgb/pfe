@@ -7,33 +7,43 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController; 
 use App\Models\User;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Role\RoleController;
 
-Route::middleware(['auth:sanctum', 'role:rh'])->group(function () {
-
-    Route::post('/collaborateur/ajouter', [CollaborateurController::class, 'ajouter']);
-    Route::get('/collaborateur/getbynometprenom', [CollaborateurController::class, 'getbynometprenom']);
-    Route::get('/collaborateur/getbyetat', [CollaborateurController::class, 'getbyetat']);
-    Route::get('/collaborateur/getall', [CollaborateurController::class, 'getall']);
-    Route::patch('/collaborateur/{id}', [CollaborateurController::class, 'modifiercollaborateur']);
-    Route::get('/rh/profil', [ProfileController::class, 'show']);   
-    Route::patch('/rh/profil', [ProfileController::class, 'update']); 
-    
-});
+// ---------------------- Auth ----------------------
 Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post(
-    '/set-password',
-    [ChangePasswordController::class, 'setPassword']
-);
+Route::middleware('auth:sanctum')->post('/set-password', [ChangePasswordController::class, 'setPassword']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
-Route::post('/init/manager', [StaffController::class, 'storeManager']);
 
-Route::middleware(['auth:sanctum', 'role:MANAGER'])->group(function () {
-    Route::get('/staff', [StaffController::class, 'index']); 
-    Route::delete('/staff/{id}', [StaffController::class, 'destroy']);
+// Création du premier manager (pas besoin d'autorisation, uniquement au setup)
+Route::post('/init/manager', [StaffController::class, 'storeManager']); 
 
-    Route::post('/staff', [StaffController::class, 'store']);
+// ---------------------- Staff (Manager) ----------------------
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/staff', [StaffController::class, 'index'])->middleware('can:viewAny,App\Models\User');
+    Route::post('/staff', [StaffController::class, 'store'])->middleware('can:create,App\Models\User');
+    Route::patch('/staff/{user}', [StaffController::class, 'update'])->middleware('auth:sanctum');
+    Route::patch('/staff/{user}/toggle-active', [StaffController::class, 'toggleActive'])
+    ->middleware('auth:sanctum');   
+     Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->middleware('can:delete,App\Models\User');
+});
 
-    Route::patch('/staff/{id}', [StaffController::class, 'update']);
-    Route::patch('/staff/{id}/toggle-active', [StaffController::class, 'toggleActive']);
+// ---------------------- Collaborateurs / RH ----------------------
+Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function () {
+    Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
+    Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User');
+    Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,App\Models\User');
 
+    // Gestion des rôles (RH)
+    Route::prefix('roles')->group(function () {
+        Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\User');
+        Route::get('/', [RoleController::class, 'getall'])->middleware('can:viewAny,App\Models\User');
+        Route::patch('/{id}', [RoleController::class, 'modifier'])->middleware('can:update,App\Models\User');
+        Route::delete('/{id}', [RoleController::class, 'supprimer'])->middleware('can:delete,App\Models\User');
+    });
+});
+
+// ---------------------- Profil RH ----------------------
+Route::middleware(['auth:sanctum'])->group(function () {
+Route::get('/rh/profil', [ProfileController::class, 'show']);
+Route::patch('/rh/profil', [ProfileController::class, 'update']);
 });

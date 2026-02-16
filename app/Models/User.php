@@ -2,68 +2,61 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
 
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'email',
+        'role_id',
         'nom',
         'prenom',
+        'email',
         'password',
-        'role_id',
+        'numero_telephone',
         'active',
         'date_recrutement',
-        'numero_telephone',
         'password_changed',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'active' => 'boolean',
-        'password_changed' => 'boolean',
-        'date_recrutement'=>'date',
     ];
-    
-    public function role(){
+
+    // Relation vers le rôle
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
-    public function hasRole(string $roleName): bool
+        public function hasRole(string $roleName): bool
     {
-        if (!$this->role) {
-            return false;
-        }
+        return strtolower($this->role?->name ?? '') === strtolower($roleName);
+    }
 
-        return strtolower($this->role->nom) === strtolower($roleName);
+
+    // Helpers de rôle
+    public function isCollaborateur()
+    {
+        return $this->role?->name === 'new_collaborateur';
+    }
+
+    public function isRh()
+    {
+        return $this->role?->name === 'rh';
+    }
+
+    public function isManager()
+    {
+        return $this->role?->name === 'manager';
     }
 }

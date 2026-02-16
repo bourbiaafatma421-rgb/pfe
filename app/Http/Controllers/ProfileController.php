@@ -2,74 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Role;
-use App\Models\User;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
+use App\Services\ProfileService;
+
 use App\Http\Requests\ModifierStaffRequest;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+
 
 
 class ProfileController extends Controller
 {
-    public function show()
+   protected $service;
+
+    public function __construct(ProfileService $service)
     {
-        $rh = Auth::user(); // récupère l'utilisateur connecté
-
-        // Formater les données comme dans ton index
-        $rhFormatted = [
-            'id' => $rh->id,
-            'email' => $rh->email,
-            'nom' => $rh->nom,
-            'prenom' => $rh->prenom,
-            'active' => $rh->active,
-            'date_recrutement' => $rh->date_recrutement 
-                ? Carbon::parse($rh->date_recrutement)->format('d-m-Y')
-                : null,
-            'numero_telephone' => $rh->numero_telephone,
-            'role' => $rh->role ? $rh->role->nom : null,
-        ];
-
-        return response()->json($rhFormatted, 200);
+        $this->service = $service;
     }
 
-    // Modifier son profil RH
+   public function show()
+{
+    $user = Auth::user(); 
+
+    try {
+        // Vérifie l'autorisation avec la policy 'view'
+        $this->authorize('view', $user);
+    } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        // Debug complet pour comprendre le 403
+        dd([
+            'message' => $e->getMessage(),
+            'user_id' => $user->id ?? null,
+            'user_email' => $user->email ?? null,
+            'user_role' => $user->role->nom ?? null,
+            'trace' => $e->getTrace()
+        ]);
+    }
+
+    $profile = $this->service->getProfile();
+
+    return response()->json($profile, 200);
+}
+
+
     public function update(ModifierStaffRequest $request)
     {
-        $rh = Auth::user();
+        $user = Auth::user();
+       try {
+        // Vérifie l'autorisation avec la policy 'update'
+        $this->authorize('update', $user);
+    } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        // Affiche toutes les infos pour comprendre le blocage
+        dd([
+            'message' => $e->getMessage(),
+            'user_id' => $user->id ?? null,
+            'user_email' => $user->email ?? null,
+            'user_role' => $user->role->nom ?? null, // si tu as une relation role
+            'request_data' => $request->all(),      // voir ce qui est envoyé
+            'trace' => $e->getTrace()
+        ]);
+    }
+        $updatedProfile = $this->service->updateProfile($request->validated());
 
-        $fieldsToUpdate = array_intersect_key(
-            $request->validated(),
-            array_flip(['numero_telephone'])
-        );
-
-        if (empty($fieldsToUpdate)) {
+        if (empty($updatedProfile)) {
             return response()->json([
                 'message' => 'Aucun champ à mettre à jour'
             ], 400);
         }
 
-        $rh->update($fieldsToUpdate);
-
-        $rhFormatted = [
-            'id' => $rh->id,
-            'email' => $rh->email,
-            'nom' => $rh->nom,
-            'prenom' => $rh->prenom,
-            'active' => $rh->active,
-            'date_recrutement' => $rh->date_recrutement 
-                ? Carbon::parse($rh->date_recrutement)->format('d-m-Y')
-                : null,
-            'numero_telephone' => $rh->numero_telephone,
-            'role' => $rh->role ? $rh->role->nom : null,
-        ];
 
         return response()->json([
             'message' => 'Profil mis à jour avec succès',
-            'rh' => $rhFormatted
+            'rh' => $updatedProfile
         ], 200);
-    }
-    
+    }    
 }

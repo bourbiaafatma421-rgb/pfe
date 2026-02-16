@@ -17,19 +17,22 @@ class RoleMiddleware
 
      */
     public function handle(Request $request, Closure $next, ...$roles)
-        {
+    {
+        $user = $request->user();
 
-            $user = $request->user();
-
-            if (!$user) {
-                return response()->json(['message' => 'Non authentifié'], 401);
-            }
-
-            if (!in_array(strtolower($user->role->nom ?? ''), array_map('strtolower', $roles))) {
-                return response()->json(['message' => 'Accès refusé'], 403);
-            }
-
-            // L'utilisateur a le bon rôle
-            return $next($request);
+        if (!$user) {
+            return response()->json(['message' => 'Non authentifié'], 401);
         }
+
+        // Vérifier le rôle avec le champ "name" et ignorer la casse
+        $userRole = strtolower($user->role->name ?? '');
+
+        $allowedRoles = array_map('strtolower', $roles);
+
+        if (!in_array($userRole, $allowedRoles)) {
+            return response()->json(['message' => 'Accès refusé'], 403);
+        }
+
+        return $next($request);
+    }
 }

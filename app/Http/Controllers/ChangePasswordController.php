@@ -3,32 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ChangePasswordRequest;
-use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Services\ChangePasswordService;
+use App\Exceptions\Auth\UserNotAuthenticatedException;
+use App\Exceptions\Auth\PasswordAlreadyChangedException;
 //use Illuminate\Support\Facades\Auth;
 
 class ChangePasswordController extends Controller
 {
+protected ChangePasswordService $service;
+
+    public function __construct(ChangePasswordService $service)
+    {
+        $this->service = $service;
+    }
+
     public function setPassword(ChangePasswordRequest $request)
     {
-        $user = $request->user();
+        try {
+            $this->service->setPassword(
+                $request->user(),
+                $request->new_password
+            );
 
-        
-        if ($user->password_changed) {
             return response()->json([
-                'message' => 'Le mot de passe a déjà été défini'
-            ], 403);
+                'message' => 'Mot de passe défini avec succès'
+            ], 200);
+
+        } catch (UserNotAuthenticatedException $e) {
+            return response()->json(['message' => $e->getMessage()], 401);
+
+        } catch (PasswordAlreadyChangedException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+
+        } catch (InvalidUserException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erreur serveur'
+            ], 500);
         }
-
-        $user->password = Hash::make($request->new_password);
-        $user->password_changed = true;
-        $user->save();
-
-        //$user->tokens()->delete();
-        
-        return response()->json([
-            'message' => 'Mot de passe défini avec succès',
-        ], 200);
+   
     }
 }

@@ -4,114 +4,80 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CollaborateurRequestRules;
 use App\Http\Requests\ModifierCollaborateurRequest;
-use App\Models\Collaborateur;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Services\CollaborateurService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
 
-class CollaborateurController extends Controller
+
+
+class CollaborateurController extends BaseController
 {
-    // Créer un collaborateur
-    public function ajouter(CollaborateurRequestRules $request)
-    {
-        
-        $password = Str::random(8);
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    protected $service;
 
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($password),
-            'role' => 'collaborateur',
-        ]);
+    public function __construct(CollaborateurService $service){
+        $this->service = $service;
+    }
+      public function ajouter(CollaborateurRequestRules $request)
+{
+        $this->authorize('create', User::class); 
 
-        $collab = Collaborateur::create([
-            'user_id' => $user->id,
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'numero_telephone' => $request->numero_telephone,
-            'poste' => $request->poste,
-            'etat' => $request->etat ?? 'encours',
-        ]);
+    try {
+        $result = $this->service->createCollaborateur($request->validated());
 
         return response()->json([
             'message' => 'Collaborateur créé avec succès',
-            'collaborateur' => $collab,
-            'user' => [
-                'email' => $user->email,
-                'password_temporaire' => $password
-            ]
+            'email' => $result['user']->email,
+            'password_temporaire' => $result['password'],
         ], 201);
-    }
 
-    // Rechercher par nom et prénom
-    public function getbynometprenom(Request $request)
-    {
-        $request->validate([
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-        ]);
-
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->where('nom', $request->nom)
-            ->where('prenom', $request->prenom)
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
-
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
+    } catch (\Exception $e) {
+        // Gestion d’erreurs spécifique pour email déjà existant
+        if (str_contains($e->getMessage(), 'users_email_unique')) {
+            return response()->json([
+                'message' => 'Cet email existe déjà.',
+                'details' => $e->getMessage()
+            ], 409);
         }
-
-        return response()->json($collab);
+        // Gestion générique avec détails
+        return response()->json([
+            'message' => 'Erreur serveur',
+            'details' => $e->getMessage(),
+            'trace' => config('app.debug') ? $e->getTraceAsString() : null
+        ], 500);
     }
-
-    // Rechercher par état
-    public function getbyetat(Request $request)
+}
+   
+     // Lister les collaborateurs
+    
+    public function index(Request $request)
     {
-        $request->validate([
-            'etat' => 'required|string',
-        ]);
+        $this->authorize('viewAny', User::class);
 
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->where('etat', $request->etat)
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
+        $collaborateurs = $this->service->getCollaborateurs($request->all());
 
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        return response()->json($collab);
-    }
-
-    // Lister tous les collaborateurs
-    public function getall()
-    {
-        $collab = Collaborateur::join('users', 'collaborateurs.user_id', '=', 'users.id')
-            ->select('collaborateurs.*', 'users.email')
-            ->get();
-
-        if ($collab->isEmpty()) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        return response()->json($collab);
+        return response()->json([
+            'message' => 'Collaborateurs récupérés avec succès',
+            'collaborateurs' => $collaborateurs,
+        ], 200);
     }
 
     // Modifier un collaborateur
-    public function modifiercollaborateur(ModifierCollaborateurRequest $request, $id)
+    public function modifiercollaborateur(ModifierCollaborateurRequest $request, User $collaborateur)
     {
-        $collab = Collaborateur::find($id);
+        $this->authorize('update', $collaborateur);
 
-        if (!$collab) {
-            return response()->json(['message' => 'Collaborateur non trouvé'], 404);
-        }
-
-        $collab->fill($request->only(['poste', 'numero_telephone', 'etat']));
-        $collab->save();
+        $user = auth()->guard()->user();
+        $updated = $this->service->updateCollaborateur($collaborateur, $request->validated(), $user);
 
         return response()->json([
             'message' => 'Collaborateur modifié avec succès',
-            'collaborateur' => $collab
-        ]);
+            'collaborateur' => $updated,
+        ], 200);
     }
-}
+
+    }
