@@ -2,70 +2,70 @@
 
 namespace App\Policies;
 
-use App\Models\Collaborateur;
-use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CollaborateurPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Determine whether the user can view any collaborateurs.
      */
     public function viewAny(User $user): bool
     {
-        if($user->role?->name === 'rh' || $user->role?->name === 'Manager'){
-            return true;
-        }
-        return false;
+        // RH et Manager peuvent voir tous les collaborateurs
+        return $user->hasRole('rh') || $user->hasRole('manager');
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can view a specific collaborateur.
      */
     public function view(User $user, User $collaborateur): bool
     {
-        if($user->role?->name === 'rh') {
+        // RH peut voir tous les collaborateurs
+        if ($user->hasRole('rh')) {
             return true;
         }
+
+        // Collaborateur peut voir seulement son propre profil
         return $user->id === $collaborateur->id;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Determine whether the user can create collaborateurs.
      */
     public function create(User $user): bool
     {
-        return $user->role?->name === 'rh';
+        // Seul RH peut créer
+        return $user->hasRole('rh');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine whether the user can update a collaborateur.
      */
-     public function update(User $user,User $collaborateur)
+    public function update(User $user, User $collaborateur): bool
     {
         // RH peut modifier tous les collaborateurs
-        if ($user->role?->name === 'rh') {
-            return true;
-    }
-
-        // Collaborateur peut uniquement modifier SON numéro de téléphone
-        if ($user->role?->name === 'new_collaborateur' && $user->id === $collaborateur->id) {
+        if ($user->hasRole('rh')) {
             return true;
         }
+
+        // Collaborateur peut uniquement modifier SON profil
+        if ($user->hasRole('new_collaborateur') && $user->id === $collaborateur->id) {
+            return true;
+        }
+
         return false;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine whether the user can delete a collaborateur.
      */
     public function delete(User $user, User $collaborateur): bool
-    {   
+    {
         return false;
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can restore a collaborateur.
      */
     public function restore(User $user, User $collaborateur): bool
     {
@@ -73,7 +73,7 @@ class CollaborateurPolicy
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete a collaborateur.
      */
     public function forceDelete(User $user, User $collaborateur): bool
     {

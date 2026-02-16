@@ -11,24 +11,26 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request)
     {
-            // Auth attempt
+        // Tentative d'authentification
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Identifiants invalides'
             ], 401);
         }
 
-        $user = Auth::user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user(); // Typage explicite pour Intelephense
 
         if (!$user->active) {
             return response()->json([
                 'message' => 'Compte désactivé'
             ], 403);
         }
+
         // Supprimer les anciens tokens et en créer un nouveau
-        $user->tokens()->delete();
-        // Créer un nouveau token
+        $user->tokens()->delete(); // fonctionne si HasApiTokens est présent
         $token = $user->createToken('api-token-' . now())->plainTextToken;
+
         // Forcer changement mot de passe si pas encore changé
         if (!$user->password_changed) {
             return response()->json([
@@ -54,11 +56,15 @@ class AuthController extends Controller
         ], 200);
     }
 
-    //pour la déconnexion
-    public function logout(Request $request){
-        $request->user()->tokens()->delete();
+    // Déconnexion
+    public function logout(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user(); // Typage explicite pour Intelephense
+        $user->tokens()->delete();
+
         return response()->json([
-            'message'=>'la déconnexion a été effectuée avec succès'
+            'message' => 'La déconnexion a été effectuée avec succès'
         ]);
     }
 }

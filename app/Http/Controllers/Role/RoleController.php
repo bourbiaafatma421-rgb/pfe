@@ -6,6 +6,7 @@ use App\Exceptions\Role\RoleExistsException as RoleExistsException;
 use App\Exceptions\Role\RoleHasUsersException as RoleHasUsersException;
 use App\Exceptions\Role\RoleProtectedException as RoleProtectedException;
 use App\Http\Requests\RequestValidationRole;
+use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -21,7 +22,7 @@ class RoleController extends BaseController
     }
     public function ajouter(RequestValidationRole $request)
     {
-        // $this->authorize('create', Role::class);
+        $this->authorize('create', Role::class);
 
         try {
             $role = $this->service->createRole($request->validated());
@@ -40,7 +41,7 @@ class RoleController extends BaseController
     // Récupérer tous les rôles (seulement nom)
     public function getall()
     {
-        // $this->authorize('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
         $roles = $this->service->getRoles();
         return response()->json([
             'message' => 'Rôles récupérés avec succès',
@@ -51,7 +52,7 @@ class RoleController extends BaseController
     // Modifier un rôle
     public function modifier(RequestValidationRole $request, $id)
     {
-        // $this->authorize('update', Role::class);
+        $this->authorize('update', Role::class);
 
         try {
             $role = $this->service->updateRole($id, $request->validated());
@@ -74,7 +75,7 @@ class RoleController extends BaseController
     // Supprimer un rôle
     public function supprimer($id)
     {
-        // $this->authorize('delete', Role::class);
+        $this->authorize('delete', Role::class);
         try {
             $this->service->deleteRole($id);
             return response()->json(['message' => 'Rôle supprimé avec succès'], 200);

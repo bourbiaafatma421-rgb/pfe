@@ -2,113 +2,61 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
 
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'role_id',
         'nom',
         'prenom',
         'email',
-        'nom',
-        'prenom',
         'password',
-<<<<<<< HEAD
-<<<<<<< HEAD
-        'role_id',
+        'numero_telephone',
         'active',
         'date_recrutement',
-        'numero_telephone',
         'password_changed',
-=======
-=======
->>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
-        'numero_telephone',
-        'active',
-        'date_recrutement',
-        'password_changed'
-<<<<<<< HEAD
->>>>>>> 5644ad7 (amelioration en cours)
-=======
->>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected $casts = [
-<<<<<<< HEAD
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'active' => 'boolean',
-        'password_changed' => 'boolean',
-        'date_recrutement'=>'date',
     ];
-    
-=======
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-];
-<<<<<<< HEAD
->>>>>>> 5644ad7 (amelioration en cours)
-=======
->>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
-    public function role(){
+
+    // Relation vers le rôle
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
-    public function hasRole(string $roleName): bool
+        public function hasRole(string $roleName): bool
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        if (!$this->role) {
-            return false;
-        }
+        return strtolower($this->role?->name ?? '') === strtolower($roleName);
+    }
 
-        return strtolower($this->role->nom) === strtolower($roleName);
-=======
-=======
->>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
+
+    // Helpers de rôle
+    public function isCollaborateur()
+    {
         return $this->role?->name === 'new_collaborateur';
     }
 
     public function isRh()
     {
-        return $this->role?->name  === 'rh';
+        return $this->role?->name === 'rh';
     }
 
     public function isManager()
     {
         return $this->role?->name === 'manager';
-<<<<<<< HEAD
->>>>>>> 5644ad7 (amelioration en cours)
-=======
->>>>>>> b18fa01a33003921548a3aec3cf4c40ce7a8a510
     }
 }

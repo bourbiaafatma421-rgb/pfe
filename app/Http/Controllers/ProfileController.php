@@ -15,31 +15,26 @@ use Illuminate\Support\Facades\Auth;
 class ProfileController extends Controller
 {
     public function show()
-    {
-        $rh = Auth::user(); // récupère l'utilisateur connecté
-
-        // Formater les données comme dans ton index
-        $rhFormatted = [
+{
+        $rh = Auth::user();
+        return response()->json([
             'id' => $rh->id,
             'email' => $rh->email,
             'nom' => $rh->nom,
             'prenom' => $rh->prenom,
             'active' => $rh->active,
-            'date_recrutement' => $rh->date_recrutement 
+            'date_recrutement' => $rh->date_recrutement
                 ? Carbon::parse($rh->date_recrutement)->format('d-m-Y')
                 : null,
             'numero_telephone' => $rh->numero_telephone,
-            'role' => $rh->role ? $rh->role->nom : null,
-        ];
-
-        return response()->json($rhFormatted, 200);
-    }
+            'role' => $rh->role?->name,
+        ], 200);
+}
 
     // Modifier son profil RH
     public function update(ModifierStaffRequest $request)
     {
-        $rh = Auth::user();
-
+        $rh = User::findOrFail(Auth::id());
         $fieldsToUpdate = array_intersect_key(
             $request->validated(),
             array_flip(['numero_telephone'])
@@ -63,7 +58,7 @@ class ProfileController extends Controller
                 ? Carbon::parse($rh->date_recrutement)->format('d-m-Y')
                 : null,
             'numero_telephone' => $rh->numero_telephone,
-            'role' => $rh->role ? $rh->role->nom : null,
+            'role' => $rh->role ? $rh->role->name : null,
         ];
 
         return response()->json([

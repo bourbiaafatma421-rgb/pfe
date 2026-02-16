@@ -24,7 +24,7 @@ class CollaborateurController extends BaseController
     }
       public function ajouter(CollaborateurRequestRules $request)
 {
-    // $this->authorize('create', User::class); 
+        $this->authorize('create', User::class); 
 
     try {
         $result = $this->service->createCollaborateur($request->validated());
@@ -56,7 +56,7 @@ class CollaborateurController extends BaseController
     
     public function index(Request $request)
     {
-        // $this->authorize('viewAny', User::class);
+        $this->authorize('viewAny', User::class);
 
         $collaborateurs = $this->service->getCollaborateurs($request->all());
 
@@ -69,7 +69,7 @@ class CollaborateurController extends BaseController
     // Modifier un collaborateur
     public function modifiercollaborateur(ModifierCollaborateurRequest $request, User $collaborateur)
     {
-        // $this->authorize('update', $collaborateur);
+        $this->authorize('update', $collaborateur);
 
         $user = auth()->guard()->user();
         $updated = $this->service->updateCollaborateur($collaborateur, $request->validated(), $user);

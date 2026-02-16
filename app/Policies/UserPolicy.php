@@ -7,24 +7,17 @@ use App\Models\User;
 class UserPolicy
 {
     /**
-     * Create a new policy instance.
+     * Détermine si l'utilisateur peut voir tous les utilisateurs
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('MANAGER');
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user): bool
-    {
-         if ($authUser->role->nom === 'MANAGER' && $user->role->nom === 'rh') {
+        // Manager peut voir tous les staffs
+        if ($user->hasRole('manager')) {
             return true;
         }
 
-        // RH peut voir son propre profil
-        if ($authUser->role->nom === 'rh' && $authUser->id === $user->id) {
+        // RH peut voir tous les collaborateurs
+        if ($user->hasRole('rh')) {
             return true;
         }
 
@@ -32,31 +25,86 @@ class UserPolicy
     }
 
     /**
-     * Determine whether the user can create models.
+     * Détermine si l'utilisateur peut voir un utilisateur spécifique
+     */
+    public function view(User $user, User $target): bool
+    {
+        // Manager peut voir tous les staffs
+        if ($user->hasRole('manager')) {
+            return true;
+        }
+
+        // RH peut voir tous les collaborateurs
+        if ($user->hasRole('rh')) {
+            return true;
+        }
+
+        // Collaborateur peut voir seulement son propre profil
+        return $user->id === $target->id;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut créer un utilisateur
      */
     public function create(User $user): bool
     {
-        return $user->hasRole('MANAGER');
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $authUser, User $user): bool
-    {
-        if ($authUser->role->nom === 'MANAGER' && $user->role->nom === 'rh') {
+        // Manager peut créer des staffs
+        if ($user->hasRole('manager')) {
             return true;
         }
 
-        if ($authUser->role->nom === 'rh' && $authUser->id === $user->id) {
+        // RH peut créer des collaborateurs
+        if ($user->hasRole('rh')) {
             return true;
         }
 
         return false;
     }
 
-    
-    public function restore(User $user): bool
+    /**
+     * Détermine si l'utilisateur peut mettre à jour un utilisateur
+     */
+    public function update(User $user, User $target): bool
+    {
+        // Manager peut modifier tous les staffs
+        if ($user->hasRole('manager')) {
+            return true;
+        }
+
+        // RH peut modifier tous les collaborateurs
+        if ($user->hasRole('rh')) {
+            return true;
+        }
+
+        // Collaborateur peut modifier uniquement son propre profil
+        if ($user->hasRole('new_collaborateur') && $user->id === $target->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut supprimer un utilisateur
+     */
+    public function delete(User $user, User $target): bool
+    {
+        // Pour l'instant, personne ne peut supprimer
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut restaurer un utilisateur
+     */
+    public function restore(User $user, User $target): bool
+    {
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut supprimer définitivement un utilisateur
+     */
+    public function forceDelete(User $user, User $target): bool
     {
         return false;
     }

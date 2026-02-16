@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AjoutManagerRequest;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class StaffController extends Controller
 {
@@ -25,7 +26,7 @@ class StaffController extends Controller
         // On commence par tous les RH
         $query = User::with('role')
         ->whereHas('role', function($lerole) {
-            $lerole->where('nom', 'rh');
+            $lerole->where('name', 'rh');
         });
 
         if ($request->filled('nom')) {
@@ -62,7 +63,8 @@ class StaffController extends Controller
                 ? \Carbon\Carbon::parse($user->date_recrutement)->format('d-m-Y')  . ''
                 : null,            
                 'numero_telephone' => $user->numero_telephone,
-                'role' => $user->role ? $user->role->nom : null,
+                'role' => $user->role ? $user->role->name
+                 : null,
             ];
         });
         return response()->json($usersFormatted, 200);
@@ -76,9 +78,9 @@ class StaffController extends Controller
             return response()->json(['message' => 'RH non trouvé'], 404);
         }
 
-        $rhId = Role::where('nom', 'rh')->value('id');
+        $rhId = Role::where('name', 'rh')->value('id');
         if ($user->role_id != $rhId) {
-            return response()->json(['message' => 'L’utilisateur doit être un RH'], 403);
+            return response()->json(['message' => 'L\'utilisateur doit être un RH'], 403);
         }
 
         $user->active = !$user->active;
@@ -99,7 +101,7 @@ class StaffController extends Controller
             $data = $request->validated();
 
             $password = Str::random(8);
-            $role = Role::firstOrCreate(['nom' => 'rh']);
+            $role = Role::firstOrCreate(['name' => 'rh']);
 
             $user = User::create([
                 'email' => $data['email'],
@@ -142,7 +144,7 @@ class StaffController extends Controller
                 ], 404);
             }
 
-            $currentUser = auth()->user();
+            $currentUser = Auth::user();
             if (!$currentUser) {
                 return response()->json([
                     'message' => 'Utilisateur non authentifié'
@@ -157,14 +159,14 @@ class StaffController extends Controller
 
             $allowed = ['numero_telephone', 'date_recrutement'];
 
-            if (strtoupper($currentUser->role->nom) === 'RH') {
+            if (strtoupper($currentUser->role->name) === 'RH') {
                 if ($currentUser->id !== $user->id) {
                     return response()->json([
                         'message' => "Accès refusé : un RH ne peut modifier que son propre profil"
                     ], 403);
                 }
-            } elseif (strtoupper($currentUser->role->nom) === 'MANAGER') {
-                $rhRole = Role::whereRaw('LOWER(nom) = ?', ['rh'])->first();
+            } elseif (strtoupper($currentUser->role->name) === 'MANAGER') {
+                $rhRole = Role::whereRaw('LOWER(name) = ?', ['rh'])->first();
                 if (!$rhRole) {
                     return response()->json([
                         'message' => 'Rôle RH introuvable'
@@ -206,39 +208,45 @@ class StaffController extends Controller
         }
     }
 
-    public function storeManager(AjoutManagerRequest $request)
-    {
-        $managerRole = Role::firstOrCreate(
-            ['nom' => 'MANAGER'] 
-        );
+   public function storeManager(AjoutManagerRequest $request)
+{
+    // Normaliser le nom du rôle en minuscules
+    $roleName = 'manager';
 
-        if (User::where('role_id', $managerRole->id)->exists()) {
-            return response()->json([
-                'message' => 'Un manager existe déjà'
-            ], 409);
-        }
+    // Cherche le rôle existant, peu importe la casse
+    $managerRole = Role::whereRaw('LOWER(name) = ?', [strtolower($roleName)])->first();
 
-        $data = $request->validated();
-        $password = Str::random(10);
-
-        $user = User::create([
-            'email' => $data['email'],
-            'password' => Hash::make($password),
-            'nom'=>$data['nom'],
-            'prenom'=>$data['prenom'],
-            'role_id' => $managerRole->id,
-            'active' => 1,
-            'date_recrutement'=>$data['date_recrutement'],
-            'numero_telephone'=>$data['numero_telephone'],
-
-        ]);
-
-
-        return response()->json([
-            'message' => 'Manager créé avec succès',
-            'password_temporaire' => $password
-        ], 201);
+    // Si le rôle n'existe pas, le créer
+    if (!$managerRole) {
+        $managerRole = Role::create(['name' => $roleName]);
     }
+    // Vérifie si un utilisateur avec ce rôle existe déjà
+    if (User::where('role_id', $managerRole->id)->exists()) {
+        return response()->json([
+            'message' => 'Un manager existe déjà'
+        ], 409);
+    }
+
+    $data = $request->validated();
+    $password = Str::random(10);
+
+    $user = User::create([
+        'email' => $data['email'],
+        'password' => Hash::make($password),
+        'nom' => $data['nom'],
+        'prenom' => $data['prenom'],
+        'role_id' => $managerRole->id,
+        'active' => 1,
+        'date_recrutement' => $data['date_recrutement'],
+        'numero_telephone' => $data['numero_telephone'],
+    ]);
+
+    return response()->json([
+        'message' => 'Manager créé avec succès',
+        'password_temporaire' => $password
+    ], 201);
+}
+
     
 }
 
