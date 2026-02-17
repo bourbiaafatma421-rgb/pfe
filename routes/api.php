@@ -21,14 +21,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/staff', [StaffController::class, 'index'])->middleware('can:viewAny,App\Models\User');
     Route::post('/staff', [StaffController::class, 'store'])->middleware('can:create,App\Models\User');
     Route::patch('/staff/{id}', [StaffController::class, 'update'])->middleware('can:update,App\Models\User');
-    Route::patch('/staff/{id}/toggle-active', [StaffController::class, 'update'])->middleware('can:update,App\Models\User');
+    Route::patch('/staff/{id}/toggle-active', [StaffController::class, 'toggleActive'])->middleware('auth:sanctum');
     Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->middleware('can:delete,App\Models\User');
 });
 // ---------------------- Collaborateurs / RH ----------------------
 Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function () {
     Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
     Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User'); 
-    Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,App\Models\User');
+    Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,collaborateur');
 });
 Route::middleware(['auth:sanctum'])->prefix('roles')->group(function () {
     Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\Role');
@@ -36,7 +36,6 @@ Route::middleware(['auth:sanctum'])->prefix('roles')->group(function () {
     Route::patch('/role/{role}', [RoleController::class, 'modifier'])->middleware(['auth:sanctum', 'can:update,role']); 
     Route::delete('/{role}', [RoleController::class, 'supprimer'])->middleware('can:delete,App\Models\Role');
 });
-
 // ---------------------- Profil RH ----------------------
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rh/profil', [ProfileController::class, 'show'])->middleware('can:view,App\Models\User');

@@ -73,7 +73,7 @@ class StaffController extends Controller
     public function toggleActive($id)
     {
         $user = User::find($id);
-
+        $this->authorize('update', $user);
         if (!$user) {
             return response()->json(['message' => 'RH non trouvé'], 404);
         }
