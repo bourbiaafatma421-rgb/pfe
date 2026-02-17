@@ -23,7 +23,7 @@ class AuthService
             throw new \Exception('Compte désactivé', 403);
         }
 
-        // Supprimer anciens tokens
+
         $user->tokens()->delete();
         $token = $user->createToken('api-token-' . now()->timestamp)->plainTextToken;
 
@@ -36,6 +36,6 @@ class AuthService
 
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete(); // Supprime le token courant
+        $user->currentAccessToken()->delete(); 
     }
 }

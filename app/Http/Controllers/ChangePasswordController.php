@@ -6,7 +6,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Services\ChangePasswordService;
 use App\Exceptions\Auth\UserNotAuthenticatedException;
 use App\Exceptions\Auth\PasswordAlreadyChangedException;
-//use Illuminate\Support\Facades\Auth;
+
 
 class ChangePasswordController extends Controller
 {
@@ -19,7 +19,7 @@ protected ChangePasswordService $service;
 
     public function setPassword(ChangePasswordRequest $request)
     {
-        try {
+        try {   
             $this->service->setPassword(
                 $request->user(),
                 $request->new_password

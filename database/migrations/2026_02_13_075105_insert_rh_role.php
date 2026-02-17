@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::table('role')->insertOrIgnore([
-            'nom' => 'rh',
+            'name' => 'rh',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::table('role')->where('nom', 'rh')->delete();
+        DB::table('role')->where('name', 'rh')->delete();
     }
 };

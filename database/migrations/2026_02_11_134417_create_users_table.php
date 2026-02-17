@@ -17,16 +17,15 @@ return new class extends Migration
             
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('nom');
-            $table->string('prenom');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->foreignId('role_id')
                   ->constrained('role') // table role au singulier
                   ->onDelete('restrict');
             $table->boolean('active')->default(true);
             $table->boolean('password_changed')->default(false);
-            $table->date('date_recrutement')->nullable();
-            $table->string('numero_telephone')->nullable();
-            //$table->timestamp('email_verified_at')->nullable();
+            $table->date('date_of_hire')->nullable();
+            $table->string('phone_number')->nullable();
             $table->rememberToken(); // crée remember_token nullable
             $table->timestamps(); // created_at et updated_at
         });

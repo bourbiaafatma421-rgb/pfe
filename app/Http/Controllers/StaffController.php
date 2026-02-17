@@ -31,7 +31,7 @@ class StaffController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $users = $this->service->listRH($request->only(['nom', 'prenom', 'active']));
+        $users = $this->service->listRH($request->only(['first_name', 'last_name', 'active']));
 
         return response()->json($users);
     }

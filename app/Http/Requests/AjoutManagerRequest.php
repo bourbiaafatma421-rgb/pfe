@@ -25,10 +25,10 @@ class AjoutManagerRequest extends FormRequest
     {
         return [
             'email'  => 'required|email|unique:users,email',
-            'nom'    => 'required|string|max:25',
-            'prenom' => 'required|string|max:25',
-            'date_recrutement' => 'required|date',
-            'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+            'first_name'    => 'required|string|max:25',
+            'last_name' => 'required|string|max:25',
+            'date_of_hire' => 'required|date',
+            'phone_number' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
         ];
     }
 
@@ -38,12 +38,12 @@ class AjoutManagerRequest extends FormRequest
             'email.required'=> 'Email obligatoire.',
             'email.email'=> 'Email invalide.',
             'email.unique'=> 'Manager déjà existant.',
-            'nom.required'=> 'Nom obligatoire.',
-            'nom.max'=> 'Nom trop long.',
-            'prenom.required'=> 'Prénom obligatoire.',
-            'prenom.max'=> 'Prénom trop long.',
-            'date_recrutement.*'=> 'Date invalide ou manquante.',
-            'numero_telephone.*'=> 'Téléphone invalide ou manquant.',
+            'first_name.required'=> 'Nom obligatoire.',
+            'first_name.max'=> 'Nom trop long.',
+            'last_name.required'=> 'Prénom obligatoire.',
+            'last_name.max'=> 'Prénom trop long.',
+            'date_of_hire.*'=> 'Date invalide ou manquante.',
+            'phone_number.*'=> 'Téléphone invalide ou manquant.',
         ];
     }
 }

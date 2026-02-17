@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
-// Exceptions personnalisées
+
 use App\Exceptions\Staff\StaffNotFoundException;
 use App\Exceptions\Staff\StaffUpdateForbiddenException;
 use App\Exceptions\Staff\ManagerAlreadyExistsException;
@@ -15,18 +15,18 @@ use App\Exceptions\Staff\InvalidRHException;
 
 class StaffService
 {
-    //lister les RH
+
     public function listRH(array $filters = [])
     {
         $query = User::with('role')
-        ->whereHas('role', fn($q) => $q->whereRaw('LOWER(nom) = ?', ['rh']));
+        ->whereHas('role', fn($q) => $q->whereRaw('LOWER(name) = ?', ['rh']));
 
-        if (!empty($filters['nom'])) {
-            $query->where('nom', 'ilike', "%{$filters['nom']}%");
+        if (!empty($filters['first_name'])) {
+            $query->where('first_name', 'ilike', "%{$filters['first_name']}%");
         }
 
-        if (!empty($filters['prenom'])) {
-            $query->where('prenom', 'ilike', "%{$filters['prenom']}%");
+        if (!empty($filters['last_name'])) {
+            $query->where('last_name', 'ilike', "%{$filters['last_name']}%");
         }
 
         if (isset($filters['active'])) {
@@ -43,48 +43,47 @@ class StaffService
             return [
                 'id' => $user->id,
                 'email' => $user->email,
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
                 'active' => $user->active,
-                'date_recrutement' => $user->date_recrutement ? Carbon::parse($user->date_recrutement)->format('d-m-Y') : null,
-                'numero_telephone' => $user->numero_telephone,
-                'role' => $user->role?->nom,
+                'date_of_hire' => $user->date_of_hire ? Carbon::parse($user->date_of_hire)->format('d-m-Y') : null,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role?->name,
             ];
         });
     }
 
-    //ajouter un rh 
+    
     public function createRH(array $data)
     {
         $password = Str::random(8);
-        $role = Role::firstOrCreate(['nom' => 'rh']);
-
+        $role = Role::firstOrCreate(['name' => 'rh']);
         $user = User::create([
             'email' => $data['email'],
             'password' => Hash::make($password),
-            'nom' => $data['nom'],
-            'prenom' => $data['prenom'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
             'role_id' => $role->id,
             'active' => 1,
-            'date_recrutement' => $data['date_recrutement'],
-            'numero_telephone' => $data['numero_telephone'],
+            'date_of_hire' => $data['date_of_hire'],
+            'phone_number' => $data['phone_number'],
         ]);
 
         return ['user' => $user, 'password_temporaire' => $password];
     }
 
-    //modifier un rh
+    
     public function updateRH(User $user, array $data, User $currentUser)
     {
-        $allowed = ['numero_telephone', 'date_recrutement'];
+        $allowed = ['phone_number', 'date_of_hire'];
 
-        if (strtoupper($currentUser->role->nom) === 'RH' && $currentUser->id !== $user->id) {
+        if (strtoupper($currentUser->role->name) === 'RH' && $currentUser->id !== $user->id) {
             throw new StaffUpdateForbiddenException("Un RH ne peut modifier que son propre profil");
         }
 
-        // MANAGER peut modifier uniquement des RH
-        if (strtoupper($currentUser->role->nom) === 'MANAGER') {
-            $rhRole = Role::whereRaw('LOWER(nom) = ?', ['rh'])->first();
+        
+        if (strtoupper($currentUser->role->name) === 'MANAGER') {
+            $rhRole = Role::whereRaw('LOWER(name) = ?', ['rh'])->first();
             if (!$rhRole || $user->role_id !== $rhRole->id) {
                 throw new StaffUpdateForbiddenException('Seuls les RH peuvent être modifiés par un MANAGER');
             }
@@ -99,10 +98,10 @@ class StaffService
         return $user;
     }
 
-    //ajouter un manager et un seul manager 
+    
     public function createManager(array $data)
     {
-        $managerRole = Role::firstOrCreate(['nom' => 'MANAGER']);
+        $managerRole = Role::firstOrCreate(['name' => 'MANAGER']);
 
         if (User::where('role_id', $managerRole->id)->exists()) {
             throw new ManagerAlreadyExistsException();        
@@ -113,21 +112,21 @@ class StaffService
         $user = User::create([
             'email' => $data['email'],
             'password' => Hash::make($password),
-            'nom' => $data['nom'],
-            'prenom' => $data['prenom'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
             'role_id' => $managerRole->id,
             'active' => 1,
-            'date_recrutement' => $data['date_recrutement'],
-            'numero_telephone' => $data['numero_telephone'],
+            'date_of_hire' => $data['date_of_hire'],
+            'phone_number' => $data['phone_number'],
         ]);
 
         return ['user' => $user, 'password_temporaire' => $password];
     }
 
-    //activer ou desactiver un compte de rh
+    
     public function toggleActiveRH(User $user)
     {
-        $rhId = Role::whereRaw('LOWER(nom) = ?', ['rh'])->value('id');
+        $rhId = Role::whereRaw('LOWER(name) = ?', ['rh'])->value('id');
         if ($user->role_id !== $rhId) {
             throw new InvalidRHException();        
         }

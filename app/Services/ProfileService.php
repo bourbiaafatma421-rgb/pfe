@@ -16,14 +16,14 @@ class ProfileService
         return [
             'id' => $user->id,
             'email' => $user->email,
-            'nom' => $user->nom,
-            'prenom' => $user->prenom,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
             'active' => $user->active,
-            'date_recrutement' => $user->date_recrutement
-                ? Carbon::parse($user->date_recrutement)->format('d-m-Y')
+            'date_of_hire' => $user->date_of_hire
+                ? Carbon::parse($user->date_of_hire)->format('d-m-Y')
                 : null,
-            'numero_telephone' => $user->numero_telephone,
-            'role' => $user->role ? $user->role->nom : null,
+            'phone_number' => $user->phone_number,
+            'role' => $user->role ? $user->role->name : null,
         ];
     }
     //mettre a jour le profil de l'utilisateur connecté
@@ -33,7 +33,7 @@ class ProfileService
 
         $fieldsToUpdate = array_intersect_key(
             $data,
-            array_flip(['numero_telephone'])
+            array_flip(['phone_number'])
         );
 
         if (!empty($fieldsToUpdate)) {

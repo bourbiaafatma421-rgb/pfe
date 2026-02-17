@@ -8,19 +8,13 @@ class UserPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role && in_array(strtoupper($user->role->nom), ['MANAGER']);
+        return $user->role && in_array(strtoupper($user->role->name), ['MANAGER']);
     }
 
     public function view(User $user, User $model)
     {
-        logger()->info('DEBUG UserPolicy:view', [
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'user_role' => $user->role->nom ?? null,
-            'model_id' => $model->id,
-        ]);
-
-        if ($user->role && in_array(strtoupper($user->role->nom), ['rh', 'MANAGER'])) {
+       
+        if ($user->role && in_array(strtoupper($user->role->name), ['rh', 'MANAGER'])) {
             return true;
         }
 
@@ -33,21 +27,15 @@ class UserPolicy
 
     public function update(User $currentUser, User $targetUser)
 {
-    // Log pour debug
-    logger()->info('Policy update check', [
-        'current_user_id' => $currentUser->id,
-        'current_user_role' => $currentUser->role->nom ?? null,
-        'target_user_id' => $targetUser->id,
-        'target_user_role' => $targetUser->role->nom ?? null,
-    ]);
+    
 
     // RH peut modifier tous les profils
-    if ($currentUser->role && strtoupper($currentUser->role->nom) === 'RH') {
+    if ($currentUser->role && strtoupper($currentUser->role->name) === 'RH') {
         return true;
     }
 
     // Manager peut aussi modifier les profils
-    if ($currentUser->role && strtoupper($currentUser->role->nom) === 'MANAGER') {
+    if ($currentUser->role && strtoupper($currentUser->role->name) === 'MANAGER') {
         return true;
     }
 
@@ -64,33 +52,28 @@ class UserPolicy
 
     public function create(User $user)
     {
-        return $user->role && in_array(strtoupper($user->role->nom), ['rh', 'MANAGER']);
+        return $user->role && strtoupper($user->role->name) === 'MANAGER';
     }
 
-    public function delete(User $user, User $model)
+    /*public function delete(User $user, User $model)
     {
         if ($user->id === $model->id) return false;
 
         return $user->role && in_array(strtoupper($user->role->nom), ['rh', 'MANAGER']);
-    }
+    }*/
 
     public function restore(User $user, User $model)
     {
-        return $user->role && in_array(strtoupper($user->role->nom), ['rh', 'MANAGER']);
+        return $user->role && strtoupper($user->role->name) === 'MANAGER';
     }
 
-    public function forceDelete(User $user, User $model)
-    {
-        // Force delete uniquement pour rh
-        return $user->role && strtoupper($user->role->nom) === 'rh';
-    }
+
     public function toggleActive(User $currentUser, User $targetUser)
 {
-    // RH ou Manager peuvent activer/désactiver
-    if (in_array(strtoupper($currentUser->role->nom ?? ''), ['RH', 'MANAGER'])) {
+    if (in_array(strtoupper($currentUser->role->name ?? ''), [ 'MANAGER'])) {
         return true;
     }
 
-    return false; // sinon interdit
+    return false; 
 }
 }

@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
+use Laravel\Sanctum\HasApiTokens; 
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
+    use HasApiTokens, HasFactory, Notifiable; 
 
     protected $fillable = [
         'role_id',
-        'nom',
-        'prenom',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'numero_telephone',
+        'phone_number',
         'active',
-        'date_recrutement',
+        'date_of_hire',
         'password_changed',
     ];
 

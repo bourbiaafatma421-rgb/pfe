@@ -25,10 +25,10 @@ class ModifierStaffRequest extends FormRequest
 
         // Tous les champs autorisés pour Manager et RH
         $rules = [
-            'nom' => 'sometimes|string|max:25',
-            'prenom' => 'sometimes|string|max:25',
-            'numero_telephone' => ['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-            'date_recrutement' => 'sometimes|date',
+            'first_name' => 'sometimes|string|max:25',
+            'last_name' => 'sometimes|string|max:25',
+            'phone_number' => ['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+            'date_of_hire' => 'sometimes|date',
         ];
 
         return $rules;

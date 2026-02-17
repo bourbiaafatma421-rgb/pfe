@@ -23,17 +23,17 @@ class AjoutStaffRequest extends FormRequest
     {
         return [
             'email' => 'required|email|unique:users,email',
-            'nom' => 'required|string|max:25',
-            'prenom' => 'required|string|max:25',
-            'date_recrutement' => 'required|date',
-            'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+            'first_name' => 'required|string|max:25',
+            'last_name' => 'required|string|max:25',
+            'date_of_hire' => 'required|date',
+            'phone_number' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
         ];
     }
     public function messages(): array
     {
         return [
             'email.unique' => 'Un utilisateur avec cet email existe déjà.',
-            'numero_telephone.regex'=>'le numero de telephone doit etre au format international '
+            'phone_number.regex'=>'le numero de telephone doit etre au format international '
         ];
     }
 }

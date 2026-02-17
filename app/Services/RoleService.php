@@ -16,13 +16,13 @@ class RoleService
         try {
             DB::beginTransaction();
 
-            $roleName = strtolower(trim($data['nom']));
-            $existingRole = Role::whereRaw('LOWER(nom)=?', [$roleName])->first();
+            $roleName = strtolower(trim($data['name']));
+            $existingRole = Role::whereRaw('LOWER(name)=?', [$roleName])->first();
             if ($existingRole) {
-                throw new RoleExistsException($data['nom']);
+                throw new RoleExistsException($data['name']);
             }
 
-            $role = Role::create(['nom' => $roleName]);
+            $role = Role::create(['name' => $roleName]);
 
             DB::commit();
             return $role;
@@ -34,7 +34,7 @@ class RoleService
 
     public function getRoles()
     {
-        return Role::select('nom')->get();
+        return Role::select('name')->get();
     }
 
     public function updateRole($id, $data)
@@ -44,19 +44,19 @@ class RoleService
 
             $role = Role::findOrFail($id);
 
-            if (in_array(strtolower($role->nom), ['rh', 'manager', 'new_collaborateur'])) {
-                throw new RoleProtectedException($role->nom);
+            if (in_array(strtolower($role->name), ['rh', 'manager', 'new_collaborateur'])) {
+                throw new RoleProtectedException($role->name);
             }
 
-            $roleName = strtolower(trim($data['nom']));
-            $existingRole = Role::whereRaw('LOWER(nom)=?', [$roleName])
+            $roleName = strtolower(trim($data['name']));
+            $existingRole = Role::whereRaw('LOWER(name)=?', [$roleName])
                                 ->where('id','!=',$id)
                                 ->first();
             if ($existingRole) {
-                throw new RoleExistsException($data['nom']);
+                throw new RoleExistsException($data['name']);
             }
 
-            $role->update(['nom' => $roleName]);
+            $role->update(['name' => $roleName]);
 
             DB::commit();
             return $role;
@@ -73,8 +73,8 @@ class RoleService
 
             $role = Role::findOrFail($id);
 
-            if (in_array(strtolower($role->nom), ['rh', 'manager', 'new_collaborateur'])) {
-                throw new RoleProtectedException($role->nom);
+            if (in_array(strtolower($role->name), ['rh', 'manager', 'new_collaborateur'])) {
+                throw new RoleProtectedException($role->name);
             }
 
             $users = $role->users()->select('nom', 'prenom')->get();

@@ -22,7 +22,7 @@ class RequestValidationRole extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:50|unique:roles,nom',
+            'name' => 'required|string|max:50|unique:roles,name',
         ];
     }
 }
