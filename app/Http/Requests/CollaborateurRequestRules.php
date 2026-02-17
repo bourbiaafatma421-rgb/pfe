@@ -21,12 +21,13 @@ class CollaborateurRequestRules extends FormRequest
      */
     public function rules(): array
     {
-        return [ 'email' => 'required|email|unique:users,email',
+        return [ 
+            'email' => 'required|email|unique:users,email',
             'nom' => 'required|string',
             'prenom' => 'required|string',
             'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-            'poste' => 'required|string',
-            'etat' => 'required|string|in:encours,terminer,Terminer,Encours',
+            'date_recrutement' => 'required|date',
+            'role' => 'required|string',
         ];
     }
 

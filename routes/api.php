@@ -1,11 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CollaborateurController;
+use App\Http\Controllers\Collaborateur\CollaborateurController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ChangePasswordController; 
-use App\Models\User;
+use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Role\RoleController;
 

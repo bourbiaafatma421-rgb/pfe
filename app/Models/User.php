@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+<<<<<<< HEAD
 use Laravel\Sanctum\HasApiTokens; 
 
 class User extends Authenticatable
@@ -20,6 +21,23 @@ class User extends Authenticatable
         'phone_number',
         'active',
         'date_of_hire',
+=======
+use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
+
+    protected $fillable = [
+        'role_id',
+        'nom',
+        'prenom',
+        'email',
+        'password',
+        'numero_telephone',
+        'active',
+        'date_recrutement',
+>>>>>>> origin/main
         'password_changed',
     ];
 

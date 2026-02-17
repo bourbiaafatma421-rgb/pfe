@@ -11,4 +11,8 @@ class RoleHasUsersException extends Exception
         $this->users = $users;
         parent::__construct("Suppression impossible, des utilisateurs sont associés à ce rôle.");
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

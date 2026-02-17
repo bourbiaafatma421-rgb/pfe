@@ -22,7 +22,6 @@ class ModifierCollaborateurRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'etat'=>'sometimes|string|in:encours,terminer,Terminer,Encours',
         'poste'=>'sometimes|string',
         'numero_telephone'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
     ];

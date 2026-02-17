@@ -15,6 +15,10 @@ use Illuminate\Routing\Controller as BaseController;
 
 class RoleController extends BaseController
 {
+<<<<<<< HEAD
+=======
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+>>>>>>> origin/main
     protected $service;
     public function __construct(RoleService $service){
         $this->service = $service;
@@ -49,12 +53,21 @@ class RoleController extends BaseController
     }
 
     // Modifier un rôle
+<<<<<<< HEAD
     public function modifier(RequestValidationRole $request, $id)
     {
         $this->authorize('update', Role::class);
 
         try {
             $role = $this->service->updateRole($id, $request->validated());
+=======
+    public function modifier(RequestValidationRole $request, Role $role)
+    {
+        $this->authorize('update', $role);
+
+        try {
+            $role = $this->service->updateRole($role->id, $request->validated());
+>>>>>>> origin/main
             return response()->json([
                 'message' => 'Rôle mis à jour avec succès',
                 'role' => $role
@@ -72,11 +85,19 @@ class RoleController extends BaseController
     }
 
     // Supprimer un rôle
+<<<<<<< HEAD
     public function supprimer($id)
     {
         $this->authorize('delete', Role::class);
         try {
             $this->service->deleteRole($id);
+=======
+    public function supprimer(Role $role)
+    {   
+        $this->authorize('delete', $role);
+        try {
+            $this->service->deleteRole($role->id);
+>>>>>>> origin/main
             return response()->json(['message' => 'Rôle supprimé avec succès'], 200);
         } catch (RoleProtectedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
@@ -89,4 +110,8 @@ class RoleController extends BaseController
             return response()->json(['message' => $e->getMessage(), 'trace'=>$e->getTraceAsString()], 500);
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

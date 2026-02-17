@@ -10,24 +10,25 @@ return new class extends Migration{
      */
     public function up(): void
     {
+
         Schema::create('role', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('nom')->unique();
             $table->timestamps();
         });
         Schema::dropIfExists('collaborateurs');
         //
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
         Schema::dropIfExists('role');
+        Schema::dropIfExists('role');
         Schema::create('collaborateurs', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
-    }
+     }
 };
