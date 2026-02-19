@@ -21,12 +21,12 @@ class ModifierStaffRequest extends FormRequest
      */
     public function rules(): array
     {
-        $currentUser = auth()->user();
+       // $currentUser = auth()->user();
 
         // Tous les champs autorisés pour Manager et RH
         $rules = [
-            'nom' => 'sometimes|string|max:25',
-            'prenom' => 'sometimes|string|max:25',
+            'last_name' => 'sometimes|string|max:25',
+            'first_name' => 'sometimes|string|max:25',
             'numero_telephone' => ['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
             'date_recrutement' => 'sometimes|date',
         ];

@@ -23,10 +23,10 @@ class CollaborateurRequestRules extends FormRequest
     {
         return [ 
             'email' => 'required|email|unique:users,email',
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'numero_telephone' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
-            'date_recrutement' => 'required|date',
+            'last_name' => 'required|string',
+            'first_name' => 'required|string',
+            'phone_number' => ['required','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+            'date_of_hire' => 'required|date',
             'role' => 'required|string',
         ];
     }
@@ -34,7 +34,7 @@ class CollaborateurRequestRules extends FormRequest
     public function messages()
     {
         return [
-            'numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678',
+            'phone_number.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678',
         ];
     }
 }

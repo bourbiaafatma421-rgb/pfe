@@ -31,13 +31,13 @@ class CollaborateurService
                 $role = Role::create(['name' => $roleName]);
             }
             $user = User::create([
-                'nom' => $data['nom'],
-                'prenom' => $data['prenom'],
+                'last_name' => $data['last_name'],
+                'first_name' => $data['first_name'],
                 'email' => $data['email'],
                 'password' => Hash::make($password),
                 'role_id' => $role->id,
-                'numero_telephone' => $data['numero_telephone'] ?? null,
-                'date_recrutement' => $data['date_recrutement'] ?? null,
+                'phone_number' => $data['phone_number'] ?? null,
+                'date_of_hire' => $data['date_of_hire'] ?? null,
                 'active' => true,
             ]);
 
@@ -61,12 +61,12 @@ class CollaborateurService
         $query = User::with('role')
             ->whereHas('role', fn($q) => $q->where('name', 'new_collaborateur'));
 
-        if (!empty($filters['nom'])) {
-            $query->where('nom', 'ilike', '%' . $filters['nom'] . '%');
+        if (!empty($filters['last_name'])) {
+            $query->where('last_name', 'ilike', '%' . $filters['last_name'] . '%');
         }
 
-        if (!empty($filters['prenom'])) {
-            $query->where('prenom', 'ilike', '%' . $filters['prenom'] . '%');
+        if (!empty($filters['first_name'])) {
+            $query->where('first_name', 'ilike', '%' . $filters['first_name'] . '%');
         }
 
         if (isset($filters['active'])) {
@@ -87,13 +87,13 @@ class CollaborateurService
                 $role = Role::where('name', $data['role'])->firstOrFail();
                 $collaborateur->role_id = $role->id;
             }
-            $collaborateur->numero_telephone = $data['numero_telephone'] ?? $collaborateur->numero_telephone;
+            $collaborateur->phone_number = $data['phone_number'] ?? $collaborateur->phone_number;
             $collaborateur->save();
         }
         // Collaborateur peut seulement modifier son numéro
         elseif ($user->isCollaborateur() && $user->id === $collaborateur->id) {
             $collaborateur->update([
-                'numero_telephone' => $data['numero_telephone'] ?? $collaborateur->numero_telephone,
+                'phone_number' => $data['phone_number'] ?? $collaborateur->phone_number,
             ]);
         }
 
