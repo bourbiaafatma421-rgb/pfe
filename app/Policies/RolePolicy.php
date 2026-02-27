@@ -23,7 +23,6 @@ class RolePolicy
         // Seul le RH peut créer un rôle
         return $user->hasRole('rh');
     }
-
     /**
      * Détermine si l'utilisateur peut modifier un rôle.
      */
