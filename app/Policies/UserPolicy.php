@@ -24,9 +24,8 @@ class UserPolicy
         return false;
     }
 
-    /**
-     * Détermine si l'utilisateur peut voir un utilisateur spécifique
-     */
+ 
+     //Détermine si l'utilisateur peut voir un utilisateur spécifique
     public function view(User $user, User $target): bool
     {
         // Manager peut voir tous les staffs
