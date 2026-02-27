@@ -41,3 +41,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rh/profil', [ProfileController::class, 'show'])->middleware('can:view,App\Models\User');
     Route::patch('/rh/profil', [ProfileController::class, 'update'])->middleware('can:update,App\Models\User');
 });
+Route::middleware(['auth:sanctum'])->get('/mon-profil', [CollaborateurController::class, 'getMonProfil']);

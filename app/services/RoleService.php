@@ -41,7 +41,6 @@ class RoleService
     {
         try {
             DB::beginTransaction();
-
             $role = Role::findOrFail($id);
 
             if (in_array(strtolower($role->name), ['rh', 'manager', 'new_collaborateur'])) {
