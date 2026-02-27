@@ -7,6 +7,8 @@ use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+
 
 class CollaborateurService
 {
@@ -98,5 +100,11 @@ class CollaborateurService
         }
 
         return $collaborateur;
+    }
+     public function getMonProfil(): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        return $user->load('role');
     }
 }

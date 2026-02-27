@@ -51,7 +51,6 @@ class CollaborateurController extends BaseController
         ], 500);
     }
 }
-   
      // Lister les collaborateurs
     
     public function index(Request $request)
@@ -77,6 +76,14 @@ class CollaborateurController extends BaseController
         return response()->json([
             'message' => 'Collaborateur modifié avec succès',
             'collaborateur' => $updated,
+        ], 200);
+    }
+    public function getMonProfil(){
+        $profil = $this->service->getMonProfil();
+
+        return response()->json([
+            'message' => 'Profil récupéré avec succès',
+            'collaborateur' => $profil,
         ], 200);
     }
 }
