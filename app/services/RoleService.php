@@ -31,11 +31,10 @@ class RoleService
             throw $e;
         }
     }
-
-    public function getRoles()
-    {
-        return Role::select('name')->get();
-    }
+public function getRoles()
+{
+    return Role::select('id', 'name')->get();
+}
 
     public function updateRole($id, $data)
     {

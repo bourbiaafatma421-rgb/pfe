@@ -77,6 +77,10 @@ class CollaborateurService
 
         return $query->paginate(10);
     }
+    public function getCollaborateurById(int $id): User
+{
+    return User::with('role')->findOrFail($id);
+}
 
     /**
      * Mettre à jour un collaborateur

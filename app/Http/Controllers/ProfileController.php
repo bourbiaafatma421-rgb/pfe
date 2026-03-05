@@ -66,5 +66,9 @@ class ProfileController extends Controller
             'rh' => $rhFormatted
         ], 200);
     }
+     public function getCurrentUser(Request $request)
+    {
+        return $request->user(); 
+    }
     
 }

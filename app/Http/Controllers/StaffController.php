@@ -56,13 +56,13 @@ class StaffController extends Controller
             return [
                 'id' => $user->id,
                 'email' => $user->email,
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
+                'last_name' => $user->nom,
+                'first_name' => $user->prenom,
                 'active' => $user->active,
-                'date_recrutement' => $user->date_recrutement 
+                'date_of_hire' => $user->date_recrutement 
                 ? \Carbon\Carbon::parse($user->date_recrutement)->format('d-m-Y')  . ''
                 : null,            
-                'numero_telephone' => $user->numero_telephone,
+                'phone_number' => $user->numero_telephone,
                 'role' => $user->role ? $user->role->name
                  : null,
             ];
@@ -70,27 +70,49 @@ class StaffController extends Controller
         return response()->json($usersFormatted, 200);
     }
 
-    public function toggleActive($id)
-    {
-        $user = User::find($id);
-        $this->authorize('update', $user);
-        if (!$user) {
-            return response()->json(['message' => 'RH non trouvé'], 404);
-        }
+   public function toggleActive($id)
+{
+    $user = User::find($id);
 
-        $rhId = Role::where('name', 'rh')->value('id');
-        if ($user->role_id != $rhId) {
-            return response()->json(['message' => 'L\'utilisateur doit être un RH'], 403);
-        }
-
-        $user->active = !$user->active;
-        $user->save();
-
-        return response()->json([
-            'message' => $user->active ? 'Compte activé avec succès' : 'Compte désactivé avec succès',
-            'active' => $user->active
-        ]);
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur non trouvé'], 404);
     }
+
+    $this->authorize('update', $user);
+
+    // Récupérer les IDs des rôles
+    $rhId      = Role::where('name', 'rh')->value('id');
+    $managerId = Role::where('name', 'manager')->value('id');
+    $connectedUser = auth()->user();
+
+    // Règles :
+    // - Manager peut désactiver/activer tout le monde
+    // - RH peut désactiver/activer tout le monde SAUF les managers
+    // - Les autres ne peuvent pas
+
+    if ($connectedUser->role_id === $managerId) {
+        // Manager → peut tout faire
+    } elseif ($connectedUser->role_id === $rhId) {
+        // RH → ne peut pas toucher un manager
+        if ($user->role_id === $managerId) {
+            return response()->json([
+                'message' => 'Un RH ne peut pas désactiver un manager'
+            ], 403);
+        }
+    } else {
+        return response()->json([
+            'message' => 'Action non autorisée'
+        ], 403);
+    }
+
+    $user->active = !$user->active;
+    $user->save();
+
+    return response()->json([
+        'message' => $user->active ? 'Compte activé avec succès' : 'Compte désactivé avec succès',
+        'active'  => $user->active
+    ]);
+}
 
     //Ajouter un RH
      
@@ -106,12 +128,12 @@ class StaffController extends Controller
             $user = User::create([
                 'email' => $data['email'],
                 'password' => Hash::make($password),
-                'nom' => $data['nom'],
-                'prenom' => $data['prenom'],
+                'last_name' => $data['nom'],
+                'first_name' => $data['prenom'],
                 'role_id' => $role->id,
                 'active' => 1,
-                'date_recrutement' => $data['date_recrutement'],
-                'numero_telephone' => $data['numero_telephone'],
+                'date_of_hire' => $data['date_recrutement'],
+                'phone_number' => $data['numero_telephone'],
             ]);
 
             return response()->json([

@@ -7,12 +7,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Role\RoleController;
+use Illuminate\Support\Facades\Auth;
+
 
 // ---------------------- Auth ----------------------
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/set-password', [ChangePasswordController::class, 'setPassword']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
-
+// ---------------------- Utilisateur connecté ----------------------
+Route::middleware('auth:sanctum')->get('/user', [ProfileController::class, 'getCurrentUser']);
 // Création du premier manager (pas besoin d'autorisation, uniquement au setup)
 Route::post('/init/manager', [StaffController::class, 'storeManager']); 
 
@@ -29,6 +32,7 @@ Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function ()
     Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
     Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User'); 
     Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,collaborateur');
+    Route::get('/{id}', [CollaborateurController::class, 'show'])->middleware('auth:sanctum');
 });
 Route::middleware(['auth:sanctum'])->prefix('roles')->group(function () {
     Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\Role');
@@ -41,4 +45,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rh/profil', [ProfileController::class, 'show'])->middleware('can:view,App\Models\User');
     Route::patch('/rh/profil', [ProfileController::class, 'update'])->middleware('can:update,App\Models\User');
 });
-Route::middleware(['auth:sanctum'])->get('/mon-profil', [CollaborateurController::class, 'getMonProfil']);
