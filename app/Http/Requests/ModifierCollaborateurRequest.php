@@ -23,13 +23,13 @@ class ModifierCollaborateurRequest extends FormRequest
     {
         return [
         'poste'=>'sometimes|string',
-        'numero_telephone'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
+        'phone_number'=>['sometimes','string','regex:/^\+\d{2,3}[0-9]{6,10}$/'],
     ];
     }
     public function messages()
     {
         return [
-            'numero_telephone.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678',
+            'phone_number.regex' => 'Le numéro doit commencer par un indicatif international, ex: +21612345678',
         ];
     }
 }

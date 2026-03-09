@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-<<<<<<< HEAD
 use Laravel\Sanctum\HasApiTokens; 
 
 class User extends Authenticatable
@@ -21,23 +20,6 @@ class User extends Authenticatable
         'phone_number',
         'active',
         'date_of_hire',
-=======
-use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
-
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
-
-    protected $fillable = [
-        'role_id',
-        'nom',
-        'prenom',
-        'email',
-        'password',
-        'numero_telephone',
-        'active',
-        'date_recrutement',
->>>>>>> origin/main
         'password_changed',
     ];
 
@@ -56,25 +38,26 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
-        public function hasRole(string $roleName): bool
+    // Vérifie un rôle en ignorant la casse
+    public function hasRole(string $roleName): bool
     {
-        return strtolower($this->role?->name ?? '') === strtolower($roleName);
+        return strtolower(trim($this->role->name ?? '')) === strtolower(trim($roleName));
     }
-
+    
 
     // Helpers de rôle
-    public function isCollaborateur()
+    public function isCollaborateur(): bool
     {
-        return $this->role?->name === 'new_collaborateur';
+        return $this->role && strtolower($this->role->name) === 'new_collaborateur';
     }
 
-    public function isRh()
+    public function isRh(): bool
     {
-        return $this->role?->name === 'rh';
+        return $this->role && strtolower($this->role->name) === 'rh';
     }
 
-    public function isManager()
+    public function isManager(): bool
     {
-        return $this->role?->name === 'manager';
+        return $this->role && strtolower($this->role->name) === 'manager';
     }
 }

@@ -77,7 +77,7 @@ class RoleService
                 throw new RoleProtectedException($role->name);
             }
 
-            $users = $role->users()->select('nom', 'prenom')->get();
+            $users = $role->users()->select('first_name', 'last_name')->get();
             if ($users->count() > 0) {
                 throw new RoleHasUsersException($users);
             }

@@ -22,7 +22,7 @@ class CollaborateurController extends BaseController
     public function __construct(CollaborateurService $service){
         $this->service = $service;
     }
-      public function ajouter(CollaborateurRequestRules $request)
+     public function ajouter(CollaborateurRequestRules $request)
 {
         $this->authorize('create', User::class); 
 

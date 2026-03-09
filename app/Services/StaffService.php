@@ -52,6 +52,9 @@ class StaffService
             ];
         });
     }
+    public function getById(int $id): User{
+        return User::with('role')->findOrFail($id);
+}
 
     
     public function createRH(array $data)

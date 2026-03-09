@@ -28,16 +28,33 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // ---------------------- Collaborateurs / RH ----------------------
 Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function () {
-    Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
-    Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User');
-    Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,App\Models\User');
 
-    // Gestion des rôles (RH)
+    // Ajouter un collaborateur (RH)
+    Route::post('/', [CollaborateurController::class, 'ajouter'])
+        ->middleware('can:create,' . App\Models\User::class);
+
+    // Liste des collaborateurs
+    Route::get('/', [CollaborateurController::class, 'index'])
+        ->middleware('can:viewAny,' . App\Models\User::class);
+
+    // Modifier un collaborateur
+    Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])
+        ->middleware('can:update,collaborateur');
+
+    // ---------------------- ROLES ----------------------
     Route::prefix('roles')->group(function () {
-        Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\User');
-        Route::get('/', [RoleController::class, 'getall'])->middleware('can:viewAny,App\Models\User');
-        Route::patch('/{id}', [RoleController::class, 'modifier'])->middleware('can:update,App\Models\User');
-        Route::delete('/{id}', [RoleController::class, 'supprimer'])->middleware('can:delete,App\Models\User');
+
+        Route::post('/', [RoleController::class, 'ajouter'])
+            ->middleware('can:create,' . App\Models\Role::class);
+
+        Route::get('/', [RoleController::class, 'getall'])
+            ->middleware('can:viewAny,' . App\Models\Role::class);
+
+        Route::patch('/{role}', [RoleController::class, 'modifier'])
+            ->middleware('can:update,role');
+
+        Route::delete('/{role}', [RoleController::class, 'supprimer'])
+            ->middleware('can:delete,role');
     });
 });
 

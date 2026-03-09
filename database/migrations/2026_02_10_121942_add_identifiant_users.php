@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void{
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nom');
-            $table->string('prenom');
-            $table->string('numero_telephone');
-            $table->date("date_recrutement");
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('phone_number');
+            $table->date("date_of_hire");
         });
     }
 
@@ -25,10 +25,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn([
-                'nom',
-                'prenom',
-                'numero_telephone',
-                'date_recrutement',
+                'first_name',
+                'last_name',
+                'phone_number',
+                'date_of_hire',
             ]);
         });
     }

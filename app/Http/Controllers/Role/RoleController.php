@@ -15,31 +15,78 @@ use Illuminate\Routing\Controller as BaseController;
 
 class RoleController extends BaseController
 {
-<<<<<<< HEAD
-=======
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
->>>>>>> origin/main
     protected $service;
     public function __construct(RoleService $service){
         $this->service = $service;
     }
     public function ajouter(RequestValidationRole $request)
     {
-        $this->authorize('create', Role::class);
+        // Charge l'utilisateur avec son rôle
+        $user = auth()->user()->load('role');
+
+        // DEBUG : informations de l'utilisateur
+        logger()->info('DEBUG RoleController: User info', [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role_id' => $user->role_id,
+            'role_name' => $user->role->name ?? 'null',
+            'hasRoleRh' => $user->hasRole('rh'),
+        ]);
 
         try {
+            // Vérifie l'autorisation via RolePolicy
+            $this->authorize('create', Role::class);
+
+            // DEBUG : autorisation réussie
+            logger()->info('DEBUG RoleController: Authorization passed for create role', [
+                'user_id' => $user->id,
+                'user_role' => $user->role->name ?? 'null'
+            ]);
+
+            // Appelle le service pour créer le rôle
             $role = $this->service->createRole($request->validated());
+
+            // DEBUG : rôle créé
+            logger()->info('DEBUG RoleController: Role created', [
+                'role_id' => $role->id,
+                'role_name' => $role->name
+            ]);
+
             return response()->json([
                 'message' => 'Rôle créé avec succès',
                 'role' => $role
             ], 201);
 
         } catch (RoleExistsException $e) {
+            logger()->warning('DEBUG RoleController: Role already exists', [
+                'role_name' => $request->input('name')
+            ]);
             return response()->json(['message' => $e->getMessage()], 409);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur serveur'], 500);
+
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            // 403 Laravel
+            logger()->error('DEBUG RoleController: Authorization failed', [
+                'user_id' => $user->id,
+                'user_role' => $user->role->name ?? 'null'
+            ]);
+            return response()->json([
+                'message' => 'Action non autorisée',
+                'erreur' => $e->getMessage()
+            ], 403);
+
+        } catch (\Throwable $e) {
+            // Autres erreurs
+            logger()->error('DEBUG RoleController: Other error', [
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'message' => 'Erreur lors de la création du rôle',
+                'erreur' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     // Récupérer tous les rôles (seulement nom)
     public function getall()
@@ -53,21 +100,12 @@ class RoleController extends BaseController
     }
 
     // Modifier un rôle
-<<<<<<< HEAD
-    public function modifier(RequestValidationRole $request, $id)
-    {
-        $this->authorize('update', Role::class);
-
-        try {
-            $role = $this->service->updateRole($id, $request->validated());
-=======
     public function modifier(RequestValidationRole $request, Role $role)
     {
         $this->authorize('update', $role);
 
         try {
             $role = $this->service->updateRole($role->id, $request->validated());
->>>>>>> origin/main
             return response()->json([
                 'message' => 'Rôle mis à jour avec succès',
                 'role' => $role
@@ -85,19 +123,11 @@ class RoleController extends BaseController
     }
 
     // Supprimer un rôle
-<<<<<<< HEAD
-    public function supprimer($id)
-    {
-        $this->authorize('delete', Role::class);
-        try {
-            $this->service->deleteRole($id);
-=======
     public function supprimer(Role $role)
     {   
         $this->authorize('delete', $role);
         try {
             $this->service->deleteRole($role->id);
->>>>>>> origin/main
             return response()->json(['message' => 'Rôle supprimé avec succès'], 200);
         } catch (RoleProtectedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
@@ -110,8 +140,4 @@ class RoleController extends BaseController
             return response()->json(['message' => $e->getMessage(), 'trace'=>$e->getTraceAsString()], 500);
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
