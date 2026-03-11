@@ -31,17 +31,15 @@ class RoleService
             throw $e;
         }
     }
-
-    public function getRoles()
-    {
-        return Role::select('name')->get();
-    }
+public function getRoles()
+{
+    return Role::select('id', 'name')->get();
+}
 
     public function updateRole($id, $data)
     {
         try {
             DB::beginTransaction();
-
             $role = Role::findOrFail($id);
 
             if (in_array(strtolower($role->name), ['rh', 'manager', 'new_collaborateur'])) {

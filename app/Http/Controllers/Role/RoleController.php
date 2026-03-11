@@ -23,7 +23,6 @@ class RoleController extends BaseController
     public function ajouter(RequestValidationRole $request)
     {
         $this->authorize('create', Role::class);
-
         try {
             $role = $this->service->createRole($request->validated());
             return response()->json([

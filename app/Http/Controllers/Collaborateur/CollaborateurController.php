@@ -51,7 +51,6 @@ class CollaborateurController extends BaseController
         ], 500);
     }
 }
-   
      // Lister les collaborateurs
     
     public function index(Request $request)
@@ -79,4 +78,31 @@ class CollaborateurController extends BaseController
             'collaborateur' => $updated,
         ], 200);
     }
+    public function getMonProfil(){
+        $profil = $this->service->getMonProfil();
+
+        return response()->json([
+            'message' => 'Profil récupéré avec succès',
+            'collaborateur' => $profil,
+        ], 200);
+    }
+    public function show(int $id)
+{
+    $collaborateur = $this->service->getCollaborateurById($id);
+    
+    $this->authorize('view', $collaborateur);
+    return response()->json([
+        'message' => 'Collaborateur récupéré avec succès',
+        'collaborateur' => [
+            'id'           => $collaborateur->id,
+            'last_name'    => $collaborateur->last_name,
+            'first_name'   => $collaborateur->first_name,
+            'email'        => $collaborateur->email,
+            'phone_number' => $collaborateur->phone_number,
+            'date_of_hire' => $collaborateur->date_of_hire,
+            'active'       => $collaborateur->active,
+            'role'         => $collaborateur->role?->name,
+        ]
+    ], 200);
+}
 }
