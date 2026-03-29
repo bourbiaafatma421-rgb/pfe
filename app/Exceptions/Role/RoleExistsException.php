@@ -16,8 +16,7 @@ class RoleExistsException extends Exception
         }
         parent::__construct($this->message);
     }
-<<<<<<< HEAD
+
+
+    
 }
-=======
-}
->>>>>>> origin/main

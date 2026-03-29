@@ -16,7 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
              'role' => RoleMiddleware::class,
         ]);
+        $middleware->redirectGuestsTo(fn () => response()->json([
+        'message' => 'Non authentifié'
+    ], 401));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+         $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+        return response()->json(['message' => 'Action non autorisée'], 403);
+    });
     })->create();

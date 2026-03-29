@@ -37,6 +37,13 @@ class StaffController extends Controller
         return response()->json($users);
     }
 
+    public function show(User $user) // 🔹 Route Model Binding
+    {
+        $this->authorize('view', $user); // 🔹 $user = cible, $this->user() = connecté
+
+        return response()->json($this->service->getById($user->id));
+    }
+
     // Ajouter un RH
     public function store(AjoutStaffRequest $request)
     {

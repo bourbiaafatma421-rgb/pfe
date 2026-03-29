@@ -52,9 +52,23 @@ class StaffService
             ];
         });
     }
-    public function getById(int $id): User{
-        return User::with('role')->findOrFail($id);
-}
+    public function getById(int $id): array
+    {
+        $user = User::with('role')->findOrFail($id);
+
+        return [
+            'id' => $user->id,
+            'email' => $user->email,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'active' => $user->active,
+            'date_of_hire' => $user->date_of_hire 
+                ? Carbon::parse($user->date_of_hire)->format('d-m-Y') 
+                : null,
+            'phone_number' => $user->phone_number,
+            'role' => $user->role?->name,
+        ];
+    }
 
     
     public function createRH(array $data)

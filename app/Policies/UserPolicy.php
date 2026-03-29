@@ -23,12 +23,14 @@ class UserPolicy
      */
     public function view(User $user, User $target): bool
     {
-        // Manager ou RH peut voir n'importe quel utilisateur
-        if ($user->role && in_array(strtoupper($user->role->name), ['rh', 'MANAGER'])) {
-            return true;
+        // Si l'utilisateur connecté est un Manager et que la cible est un RH
+        if ($user->role && strtoupper($user->role->name) === 'MANAGER') {
+            if ($target->role && strtoupper($target->role->name) === 'RH') {
+                return true; //  Manager peut voir les détails d'un RH
+            }
         }
 
-        // Un utilisateur peut voir son propre profil
+        // Sinon, un utilisateur peut voir seulement son propre profil
         return $user->id === $target->id;
     }
 
