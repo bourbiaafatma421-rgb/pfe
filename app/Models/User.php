@@ -21,6 +21,8 @@ class User extends Authenticatable
         'active',
         'date_of_hire',
         'password_changed',
+        'signature_path',   
+        'signature_token',
     ];
 
     protected $hidden = [

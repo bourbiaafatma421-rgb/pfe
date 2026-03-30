@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Signature;
 
 use App\Services\SignatureService;
 use Illuminate\Http\Request;
