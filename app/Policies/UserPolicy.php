@@ -23,10 +23,11 @@ class UserPolicy
 
         return false;
     }
-
-    /**
-     * Détermine si l'utilisateur peut voir un utilisateur spécifique
-     */
+    public function viewDashboard(User $user): bool{
+        return $user->hasRole('manager') || $user->hasRole('rh');
+    }
+ 
+     //Détermine si l'utilisateur peut voir un utilisateur spécifique
     public function view(User $user, User $target): bool
     {
         // Manager peut voir tous les staffs

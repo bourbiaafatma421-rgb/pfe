@@ -9,18 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+    public function up(){
         Schema::table('users', function (Blueprint $table) {
-         $table->boolean("active");
+            $table->index('role_id');
+            $table->index('active');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        
+    public function down(){
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['role_id']);
+            $table->dropIndex(['active']);
+        });
     }
 };
