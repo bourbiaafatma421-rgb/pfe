@@ -14,7 +14,7 @@ use App\Mail\CollaborateurBienvenueMail;
 
 class CollaborateurService
 {
-    // ─── Créer un collaborateur ───────────────────────────────────────────────
+    //  Créer un collaborateur ──
 
     public function createCollaborateur(array $data): array
     {
@@ -45,7 +45,7 @@ class CollaborateurService
 
             DB::commit();
 
-            // ─── Envoi email de bienvenue avec QR Code ────────────────────────
+            //  Envoi email de bienvenue avec QR Code 
             try {
                 $signatureUrl = config('app.frontend_url') . '/sign/' . $signatureToken;
 
@@ -71,7 +71,7 @@ class CollaborateurService
         }
     }
 
-    // ─── Lister les collaborateurs avec filtres ───────────────────────────────
+    //  Lister les collaborateurs avec filtres ─
 
     public function getCollaborateurs(array $filters)
     {
@@ -113,34 +113,54 @@ class CollaborateurService
         return $query->paginate(10);
     }
 
-    // ─── Récupérer un collaborateur par ID ───────────────────────────────────
+    //  Récupérer un collaborateur par ID ──
 
     public function getCollaborateurById(int $id): User
     {
         return User::with('role')->findOrFail($id);
     }
 
-    // ─── Mettre à jour un collaborateur ──────────────────────────────────────
+    //  Mettre à jour un collaborateur ──
 
     public function updateCollaborateur(User $collaborateur, array $data, User $user): User
-    {
-        if ($user->isRh()) {
-            if (!empty($data['role'])) {
-                $role = Role::where('name', $data['role'])->firstOrFail();
+{
+    if ($user->isRh()) {
+
+        //  Update role
+        if (!empty($data['role'])) {
+            $role = Role::whereRaw('LOWER(name) = ?', [strtolower($data['role'])])->first();
+
+            if ($role) {
                 $collaborateur->role_id = $role->id;
             }
-            $collaborateur->phone_number = $data['phone_number'] ?? $collaborateur->phone_number;
-            $collaborateur->save();
-        } elseif ($user->isCollaborateur() && $user->id === $collaborateur->id) {
-            $collaborateur->update([
-                'phone_number' => $data['phone_number'] ?? $collaborateur->phone_number,
-            ]);
         }
 
-        return $collaborateur;
+        //  Update phone
+        if (isset($data['phone_number'])) {
+            $collaborateur->phone_number = $data['phone_number'];
+        }
+
+        $collaborateur->save();
+        $collaborateur->load('role');
+
+    } elseif ($user->isCollaborateur() && $user->id === $collaborateur->id) {
+
+        $collaborateur->update([
+            'phone_number' => $data['phone_number'] ?? $collaborateur->phone_number,
+        ]);
+
+        $collaborateur->load('role');
     }
 
-    // ─── Profil du collaborateur connecté ────────────────────────────────────
+    return $collaborateur;
+}
+    public function updateAvatar(User $user, string $path): User
+{
+    $user->avatar_path = $path;
+    $user->save();
+    return $user;
+}
+    //  Profil du collaborateur connecté 
 
     public function getMonProfil(): User
     {

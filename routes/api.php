@@ -9,9 +9,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\Document\DocumentController;
 use App\Http\Controllers\Signature\SignatureController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\dashboard\DashboardController;
 use App\Http\Controllers\notifications\NotificationController;
-
+use App\Http\Controllers\Profil\ProfilController;
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 Route::post('/login', [AuthController::class, 'login']);
@@ -41,7 +41,13 @@ Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function ()
     Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur'])->middleware('can:update,collaborateur');
     Route::get('/{id}', [CollaborateurController::class, 'show'])->middleware('auth:sanctum');
 });
-
+// ─── Profil (tous les utilisateurs connectés) ─────────────────────────────
+Route::middleware(['auth:sanctum'])->prefix('profil')->group(function () {
+    Route::get('/',          [ProfilController::class, 'show']);
+    Route::patch('/telephone', [ProfilController::class, 'updateTelephone']);
+    Route::post('/avatar',   [ProfilController::class, 'uploadAvatar']);
+    Route::delete('/avatar', [ProfilController::class, 'deleteAvatar']);
+});
 // ─── Rôles ────────────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->prefix('roles')->group(function () {
     Route::post('/', [RoleController::class, 'ajouter'])->middleware('can:create,App\Models\Role');

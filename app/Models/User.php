@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password_changed',
         'signature_path',   
         'signature_token',
+        'avatar_path',
     ];
 
     protected $hidden = [
@@ -61,4 +62,8 @@ class User extends Authenticatable
     {
         return $this->role?->name === 'manager';
     }
+    public function assignments()
+{
+    return $this->hasMany(\App\Models\DocumentAssignment::class, 'user_id');
+}
 }

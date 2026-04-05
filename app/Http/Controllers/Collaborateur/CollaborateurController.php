@@ -11,9 +11,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-
-
-
 class CollaborateurController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -78,14 +75,6 @@ class CollaborateurController extends BaseController
             'collaborateur' => $updated,
         ], 200);
     }
-    public function getMonProfil(){
-        $profil = $this->service->getMonProfil();
-
-        return response()->json([
-            'message' => 'Profil récupéré avec succès',
-            'collaborateur' => $profil,
-        ], 200);
-    }
     public function show(int $id)
 {
     $collaborateur = $this->service->getCollaborateurById($id);
@@ -105,4 +94,5 @@ class CollaborateurController extends BaseController
         ]
     ], 200);
 }
+
 }

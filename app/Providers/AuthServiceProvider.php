@@ -4,9 +4,9 @@ namespace App\Providers;
 
 use App\Models\Role;
 use App\Models\User;
-use App\Policies\RolePolicy;
-
 use App\Models\Document;
+use App\Models\DocumentSignature;          // ← fix: use ajouté
+use App\Policies\RolePolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\DocumentSignaturePolicy;
@@ -16,14 +16,14 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        User::class => UserPolicy::class,
-        Role::class => RolePolicy::class, 
-        Document::class => DocumentPolicy::class,
+        User::class              => UserPolicy::class,
+        Role::class              => RolePolicy::class,
+        Document::class          => DocumentPolicy::class,
         DocumentSignature::class => DocumentSignaturePolicy::class,
     ];
 
     public function boot(): void
     {
-         $this->registerPolicies();
+        $this->registerPolicies();
     }
 }
