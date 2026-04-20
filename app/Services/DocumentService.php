@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DocumentService
 {
-    // ─── Lister les documents ─────────────────────────────────────────────────
+
 
     public function listDocuments(array $filters = [])
     {
@@ -45,8 +45,8 @@ class DocumentService
         });
     }
 
-    // ─── Créer un document + multi-assignation ────────────────────────────────
 
+    
     public function createDocument(array $data)
     {
         if (Document::where('namedoc', $data['namedoc'])->exists()) {
@@ -59,7 +59,7 @@ class DocumentService
             'signature_req' => $data['signature_req'],
         ]);
 
-        // ─── Multi-assignation ────────────────────────────────────────────────
+
         if (!empty($data['user_ids']) && is_array($data['user_ids'])) {
             foreach ($data['user_ids'] as $userId) {
                 $this->assignDocument($document->id, (int) $userId);
@@ -69,8 +69,8 @@ class DocumentService
         return $document;
     }
 
-    // ─── Mettre à jour un document ────────────────────────────────────────────
 
+    
     public function updateDocument(int $id, array $data)
     {
         $document = Document::findOrFail($id);
@@ -92,21 +92,29 @@ class DocumentService
 
         $document->save();
 
-        // Mise à jour des assignations si user_ids fournis
+
         if (!empty($data['user_ids']) && is_array($data['user_ids'])) {
-            // Supprimer les anciennes assignations
-            $document->assignments()->delete();
-            // Recréer les nouvelles
+
+            $existingUserIds = $document->assignments()->pluck('user_id')->toArray();
+
+
             foreach ($data['user_ids'] as $userId) {
-                $this->assignDocument($document->id, (int) $userId);
+                if (!in_array($userId, $existingUserIds)) {
+                    $this->assignDocument($document->id, (int) $userId);
+                }
             }
+
+
+            $document->assignments()
+                ->whereNotIn('user_id', $data['user_ids'])
+                ->delete();
         }
 
         return $document;
     }
 
-    // ─── Supprimer un document ────────────────────────────────────────────────
 
+    
     public function deleteDocument(int $id)
     {
         $document = Document::find($id);
@@ -126,8 +134,8 @@ class DocumentService
         }
     }
 
-    // ─── Assigner un document à un utilisateur ────────────────────────────────
 
+    
     private function assignDocument(int $documentId, int $userId, string $status = 'pending')
     {
         $user = User::find($userId);
@@ -142,14 +150,18 @@ class DocumentService
             'user_id'     => $user->id,
             'assigned_by' => $assignedBy->id,
             'status'      => $status,
+            'signed_at'   => null, 
         ]);
     }
 
-    // ─── Mettre à jour une assignation ───────────────────────────────────────
 
-    private function updateAssignment(int $documentId, array $data)
+
+    private function updateAssignment(int $documentId, int $userId, array $data)
     {
-        $assignment = DocumentAssignment::where('document_id', $documentId)->first();
+        $assignment = DocumentAssignment::where('document_id', $documentId)
+            ->where('user_id', $userId)
+            ->first();
+
         if (!$assignment) return null;
 
         if (!empty($data['user_id'])) {
@@ -164,9 +176,58 @@ class DocumentService
 
         if (!empty($data['status'])) {
             $assignment->status = $data['status'];
+
+            if ($data['status'] === 'signed') {
+                $assignment->signed_at = now();
+            }
         }
 
         $assignment->save();
+
         return $assignment;
+    }
+
+    public function getDocumentsForCollaborateur(int $userId, array $filters = [])
+    {
+        $user = Auth::user();
+
+        $query = Document::with('assignments.collaborateur', 'assignments.assignedBy');
+
+        if (strtolower($user->role->name) === 'collaborateur') {
+            $query->whereHas('assignments', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            });
+        }
+
+        if (!empty($filters['namedoc'])) {
+            $query->where('namedoc', 'ilike', '%' . $filters['namedoc'] . '%');
+        }
+
+        return $query->orderBy('created_at', 'desc')->get()->map(function ($doc) {
+            return [
+                'id'            => $doc->id,
+                'namedoc'       => $doc->namedoc,
+
+                'path'          => Storage::url($doc->path),
+
+                'signature_req' => $doc->signature_req,
+
+                'assignments'   => $doc->assignments->map(fn($a) => [
+                    'user_id'       => $a->user_id,
+                    'user_fullname' => $a->collaborateur
+                        ? $a->collaborateur->first_name . ' ' . $a->collaborateur->last_name
+                        : 'Inconnu',
+                    'assigned_by'   => $a->assignedBy
+                        ? $a->assignedBy->first_name . ' ' . $a->assignedBy->last_name
+                        : 'Système',
+                    'status'        => $a->status,
+
+
+                    'signed_at'     => optional($a->signed_at)->toDateTimeString(),
+
+                    'signature_path'=> $a->signaturePath(),
+                ]),
+            ];
+        });
     }
 }

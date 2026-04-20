@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens; 
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable; 
@@ -21,6 +21,7 @@ class User extends Authenticatable
         'active',
         'date_of_hire',
         'password_changed',
+        'signature_path',
     ];
 
     protected $hidden = [
@@ -59,5 +60,14 @@ class User extends Authenticatable
     public function isManager(): bool
     {
         return $this->role && strtolower($this->role->name) === 'manager';
+    }
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(DocumentAssignment::class, 'user_id');
+    }
+
+    public function assignmentsCreated(): HasMany
+    {
+        return $this->hasMany(DocumentAssignment::class, 'assigned_by');
     }
 }

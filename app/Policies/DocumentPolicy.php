@@ -19,14 +19,23 @@ class DocumentPolicy
     /**
      * Determine whether the user can view the model.
      */
-   public function view(User $user, Document $document): bool{
-        return true;
+    public function view(User $user, Document $document): bool
+    {
+        if (strtolower($user->role->name) === 'rh') {
+            return true;
+        }
+
+        return $document->assignments->contains('user_id', $user->id);
     }
 
+    public function viewOwn(User $user): bool
+    {
+        return strtolower($user->role->name) === 'new_collaborateur';
+    }
     /**
      * Determine whether the user can create models.
      */
-  public function create(User $user): bool
+    public function create(User $user): bool
     {
     return strtolower($user->role->name) === 'rh';
     }
@@ -43,9 +52,9 @@ class DocumentPolicy
      * Determine whether the user can delete the model.
      */
   public function delete(User $user, ?Document $document = null): bool
-{
-    return strtolower($user->role->name) === 'rh';
-}
+    {
+        return strtolower($user->role->name) === 'rh';
+    }
 
     /**
      * Determine whether the user can restore the model.

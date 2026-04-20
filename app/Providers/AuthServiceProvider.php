@@ -10,6 +10,7 @@ use App\Models\Document;
 use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\DocumentSignaturePolicy;
+use Illuminate\Support\Facades\Gate;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -25,5 +26,16 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+        Gate::define('view-dashboard', function (User $user) {
+            return $user->role && strtolower($user->role->name) === 'new_collaborateur';
+        });
+           
+        Gate::define('view-formations', function (User $user) {
+            return $user->role && strtolower($user->role->name) === 'new_collaborateur';
+        });
+
+        Gate::define('view-integration-plan', function (User $user) {
+            return $user->role && strtolower($user->role->name) === 'new_collaborateur';
+        });
     }
 }

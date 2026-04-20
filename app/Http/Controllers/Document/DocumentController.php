@@ -22,8 +22,8 @@ class DocumentController extends Controller
         $this->service = $service;
     }
 
-    // ─── POST /api/documents ──────────────────────────────────────────────────
 
+    
     public function store(AjoutDocumentRequest $request)
     {
         $this->authorize('create', Document::class);
@@ -31,12 +31,12 @@ class DocumentController extends Controller
         try {
             $data = $request->validated();
 
-            // Stocker le fichier PDF
+
             if ($request->hasFile('path')) {
                 $data['path'] = $request->file('path')->store('documents', 'public');
             }
 
-            // Création document + multi-assignation
+
             $document = $this->service->createDocument($data);
             $document->load('assignments.collaborateur');
 
@@ -70,7 +70,7 @@ class DocumentController extends Controller
         }
     }
 
-    // ─── PATCH /api/documents/:id ─────────────────────────────────────────────
+
 
     public function update(UpdateDocumentRequest $request, int $id)
     {
@@ -108,7 +108,7 @@ class DocumentController extends Controller
         ]);
     }
 
-    // ─── DELETE /api/documents/:id ────────────────────────────────────────────
+
 
     public function destroy(int $id)
     {
@@ -126,7 +126,7 @@ class DocumentController extends Controller
         }
     }
 
-    // ─── GET /api/documents ───────────────────────────────────────────────────
+
 
     public function index(Request $request)
     {
@@ -138,41 +138,7 @@ class DocumentController extends Controller
         return response()->json(['documents' => $documents]);
     }
 
-    // ─── POST /api/documents/sign ─────────────────────────────────────────────
 
-    public function sign(SignDocumentRequest $request)
-    {
-        $data     = $request->validated();
-        $document = Document::findOrFail($data['document_id']);
-
-        $this->authorize('sign', $document);
-
-        $userId        = $request->user()->id;
-        $signatureFile = $request->file('signature');
-
-        try {
-            $documentSignature = $this->service->signDocument($document->id, $userId, $signatureFile);
-
-            return response()->json([
-                'message'   => 'Document signé avec succès',
-                'signature' => [
-                    'document_id'    => $documentSignature->document_id,
-                    'user_id'        => $documentSignature->user_id,
-                    'signature_path' => $documentSignature->signature_path,
-                    'signed_at'      => $documentSignature->signed_at,
-                    'status'         => $documentSignature->status,
-                ]
-            ], 200);
-
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la signature du document',
-                'erreur'  => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    // ─── GET /api/documents/:id/view ─────────────────────────────────────────
 
     public function view(int $id)
     {
@@ -188,6 +154,25 @@ class DocumentController extends Controller
         return response()->file($path, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $document->namedoc . '.pdf"',
+        ]);
+    }
+
+
+    public function mesDocuments(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Non authentifié'], 401);
+        }
+        
+        $this->authorize('viewOwn', Document::class);
+        $filters = $request->only('namedoc');
+
+        $documents = $this->service->getDocumentsForCollaborateur($user->id, $filters);
+
+        return response()->json([
+            'documents' => $documents
         ]);
     }
 }

@@ -11,7 +11,7 @@ class DocumentAssignment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['document_id', 'user_id', 'assigned_by', 'status'];
+    protected $fillable = ['document_id', 'user_id', 'assigned_by', 'status', 'signed_at'];
 
     public function document()  { 
         return $this->belongsTo(Document::class); 
@@ -19,12 +19,13 @@ class DocumentAssignment extends Model
     public function collaborateur() {
         return $this->belongsTo(User::class, 'user_id'); 
     }
-    public function assignedBy()    { 
+
+    public function assignedBy() { 
         return $this->belongsTo(User::class, 'assigned_by'); 
     }
-    public function signature()
+
+    public function signaturePath(): ?string
     {
-        return $this->hasOne(DocumentSignature::class, 'user_id', 'user_id')
-            ->whereColumn('document_id', 'document_assignments.document_id');
+        return $this->collaborateur ? $this->collaborateur->signature_path : null;
     }
 }

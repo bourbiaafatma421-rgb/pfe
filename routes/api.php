@@ -10,6 +10,9 @@ use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Document\DocumentController;
 use App\Http\Controllers\Document\DocumentSignatureController;
+use App\Http\Controllers\Dashboard\DashboardCollaborateurController;
+use App\Http\Controllers\Formation\FormationController;
+use App\Http\Controllers\IntegrationPlan\IntegrationPlanController;
 
 // ---------------------- Auth ----------------------
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,6 +35,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->middleware('can:delete,App\Models\User');
 });
 
+Route::get('/dashboard/collaborateur', [DashboardCollaborateurController::class, 'index'])
+    ->middleware(['auth:sanctum']);
+
 //----------------------Gestion des documents----------------------
 Route::middleware(['auth:sanctum'])->prefix('documents')->group(function () {
     Route::post('/', [DocumentController::class, 'store'])
@@ -43,7 +49,10 @@ Route::middleware(['auth:sanctum'])->prefix('documents')->group(function () {
         ->middleware('auth:sanctum');
     Route::delete('/{id}', [DocumentController::class, 'destroy'])
         ->middleware('can:delete,App\Models\Document');
+    
+    Route::get('/mes-documents', [DocumentController::class, 'mesDocuments']);
 });
+
 
 Route::middleware(['auth:sanctum'])->prefix('signature')->group(function () {
     // Générer token QR pour le collaborateur connecté
@@ -90,4 +99,15 @@ Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function ()
 Route::middleware(['auth:sanctum'])->group(function () {
 Route::get('/rh/profil', [ProfileController::class, 'show']);
 Route::patch('/rh/profil', [ProfileController::class, 'update']);
+});
+
+// ---------------------- Formations & Plan d'intégration ----------------------
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::get('/my-formations', [FormationController::class, 'myFormations'])
+        ->middleware('can:view-formations');
+
+    Route::get('/my-integration-plan', [IntegrationPlanController::class, 'myPlan'])
+        ->middleware('can:view-integration-plan');
+
 });
