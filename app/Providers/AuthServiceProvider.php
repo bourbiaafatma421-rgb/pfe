@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Document;
-use App\Models\DocumentSignature;          // ← fix: use ajouté
+use App\Models\DocumentSignature;          
 use App\Policies\RolePolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\DocumentSignaturePolicy;
+use App\Policies\OnboardingPolicy;         
+use App\Models\Onboarding;                 
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -20,6 +22,8 @@ class AuthServiceProvider extends ServiceProvider
         Role::class              => RolePolicy::class,
         Document::class          => DocumentPolicy::class,
         DocumentSignature::class => DocumentSignaturePolicy::class,
+        Onboarding::class        => OnboardingPolicy::class,
+
     ];
 
     public function boot(): void

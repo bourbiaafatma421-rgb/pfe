@@ -24,6 +24,7 @@ class User extends Authenticatable
         'signature_path',   
         'signature_token',
         'avatar_path',
+        'cv_data',  
     ];
 
     protected $hidden = [
@@ -34,6 +35,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'cv_data'  => 'array',
     ];
 
     // Relation vers le rôle

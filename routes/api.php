@@ -12,6 +12,7 @@ use App\Http\Controllers\Signature\SignatureController;
 use App\Http\Controllers\dashboard\DashboardController;
 use App\Http\Controllers\notifications\NotificationController;
 use App\Http\Controllers\Profil\ProfilController;
+use App\Http\Controllers\RHIA\OnboardingRhController;
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 Route::post('/login', [AuthController::class, 'login']);
@@ -90,4 +91,18 @@ Route::middleware(['auth:sanctum'])->prefix('notifications')->group(function () 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rh/profil', [ProfileController::class, 'show']);
     Route::patch('/rh/profil', [ProfileController::class, 'update']);
+
+//onboarding
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('onboarding')->group(function () {
+        Route::get('/',                        [OnboardingRHController::class, 'index']);
+        Route::get('/{onboarding}',            [OnboardingRHController::class, 'show']);
+        Route::post('/user/{user}/generer',    [OnboardingRHController::class, 'generer']);
+        Route::patch('/{onboarding}/valider',  [OnboardingRHController::class, 'valider']);
+        Route::post('/{onboarding}/tasks',     [OnboardingRHController::class, 'addTask']);
+        Route::patch('/tasks/{task}',          [OnboardingRHController::class, 'updateTask']);
+        Route::delete('/tasks/{task}',         [OnboardingRHController::class, 'deleteTask']);
+        Route::get('/colab/status',            [OnboardingRHController::class, 'colabStatus']);
+    });
+});
 });
