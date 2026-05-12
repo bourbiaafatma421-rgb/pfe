@@ -11,7 +11,6 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request)
     {
-        // Tentative d'authentification
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Identifiants invalides'
@@ -19,7 +18,7 @@ class AuthController extends Controller
         }
 
         /** @var \App\Models\User $user */
-        $user = Auth::user(); // Typage explicite pour Intelephense
+        $user = Auth::user();
 
         if (!$user->active) {
             return response()->json([
@@ -27,40 +26,45 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Supprimer les anciens tokens et en créer un nouveau
-        $user->tokens()->delete(); // fonctionne si HasApiTokens est présent
+        $user->tokens()->delete();
         $token = $user->createToken('api-token-' . now())->plainTextToken;
 
-        // Forcer changement mot de passe si pas encore changé
+        // Forcer changement mot de passe
         if (!$user->password_changed) {
             return response()->json([
-                'message' => 'Changement de mot de passe obligatoire',
+                'message'               => 'Changement de mot de passe obligatoire',
                 'force_password_change' => true,
-                'token' => $token,
+                'token'                 => $token,
                 'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email
+                    'id'             => $user->id,
+                    'email'          => $user->email,
+                    'role'           => $user->role->name ?? null,
+                    'active'         => $user->active,
+                    'signature_path' => $user->signature_path, // ← ajouté
+                    'cv_data'        => $user->cv_data,         // ← ajouté
                 ]
             ], 200);
         }
 
         return response()->json([
             'message' => 'Connexion réussie',
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'role' => $user->role->name ?? null,
-                'active' => $user->active
+            'token'   => $token,
+            'user'    => [
+                'id'                    => $user->id,
+                'email'                 => $user->email,
+                'role'                  => $user->role->name ?? null,
+                'active'                => $user->active,
+                'force_password_change' => false,              // ← ajouté
+                'signature_path'        => $user->signature_path, // ← ajouté
+                'cv_data'               => $user->cv_data,         // ← ajouté
             ]
         ], 200);
     }
 
-    // Déconnexion
     public function logout(Request $request)
     {
         /** @var \App\Models\User $user */
-        $user = $request->user(); // Typage explicite pour Intelephense
+        $user = $request->user();
         $user->tokens()->delete();
 
         return response()->json([

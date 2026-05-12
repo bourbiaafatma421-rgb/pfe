@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens; // <-- Ajout du trait
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable; // <-- HasApiTokens ajouté
+    use HasApiTokens, HasFactory, Notifiable; 
 
     protected $fillable = [
         'role_id',
@@ -67,5 +67,9 @@ class User extends Authenticatable
     public function assignments()
 {
     return $this->hasMany(\App\Models\DocumentAssignment::class, 'user_id');
+}
+public function onboarding()
+{
+    return $this->hasOne(Onboarding::class);
 }
 }

@@ -106,7 +106,7 @@ class OnboardingRHController extends Controller
             'task_title' => 'sometimes|string|max:500',
             'objective'  => 'sometimes|nullable|string',
             'deadline'   => 'sometimes|date',
-            'type'       => 'sometimes|in:technique,administratif,humain',
+            'type'       => ['sometimes', 'in:technique,administratif,humain,formation'], 
             'status'     => 'sometimes|in:en_attente,en_cours,termine',
         ]);
 
@@ -181,4 +181,5 @@ class OnboardingRHController extends Controller
             'message' => $online ? 'Colab est en ligne.' : 'Colab est hors ligne.',
         ]);
     }
+    
 }

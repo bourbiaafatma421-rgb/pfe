@@ -62,7 +62,7 @@ class OnboardingAIService
         }
 
         $plan = $data['plan'];
-
+        Log::info('OnboardingAI: plan brut', ['plan' => json_encode($plan)]);
         // 3. Créer l'onboarding
         $onboarding = Onboarding::updateOrCreate(
             ['user_id' => $user->id],
@@ -118,7 +118,13 @@ private function parsePlanToTasks(Onboarding $onboarding, array $plan, ?string $
                             'month_number'  => $monthNumber,
                             'week_number'   => $weekNumber,
                             'day_name'      => $jour,
-                            'task_title'    => $tache['tache'] ?? $tache['titre'] ?? $tache['activite'] ?? 'Tâche',
+                            'task_title'    => $tache['tâche']      
+                                ?? $tache['tache']               
+                                ?? $tache['titre'] 
+                                ?? $tache['activite']
+                                ?? $tache['task_title']
+                                ?? $tache['description']
+                                ?? 'Tâche',        
                             'objective'     => $tache['objectif'] ?? null,
                             'type'          => $this->normalizeType($tache['type'] ?? 'technique'),
                             'deadline'      => $this->calcDeadline($startDate, $monthNumber, $weekNumber, $jour),
@@ -135,8 +141,13 @@ private function parsePlanToTasks(Onboarding $onboarding, array $plan, ?string $
                         'month_number'  => $monthNumber,
                         'week_number'   => $weekNumber,
                         'day_name'      => null,
-                        'task_title'    => $semaineData['objectif'] ?? $semaineData['titre'] ?? 'Objectif semaine',
-                        'objective'     => $semaineData['livrable'] ?? $semaineData['objectif'] ?? null,
+                        'task_title'    => $semaineData['objectif_principal']
+                            ?? $semaineData['objectif'] 
+                            ?? $semaineData['titre'] 
+                            ?? 'Objectif semaine',
+                        'objective'     => $semaineData['livrable'] 
+                            ?? $semaineData['livrable_attendu']
+                            ?? null,
                         'type'          => 'technique',
                         'deadline'      => $this->calcDeadline($startDate, $monthNumber, $weekNumber, 'vendredi'),
                         'completion_date' => null,
@@ -182,6 +193,9 @@ private function parsePlanToTasks(Onboarding $onboarding, array $plan, ?string $
             'réunion/rencontre'  => 'humain',
             'reunion'            => 'humain',
             'rencontre'          => 'humain',
+            'formation'          => 'formation',
+            'formation/ressource'=> 'formation',
+            'ressource'          => 'formation',
         ];
 
         return $map[$type] ?? 'technique';

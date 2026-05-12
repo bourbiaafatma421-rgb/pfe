@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DocumentService
 {
-    // ─── Lister les documents ─────────────────────────────────────────────────
+    // ─── Lister tous les documents (RH/Manager) ───────────────────────────────
 
     public function listDocuments(array $filters = [])
     {
@@ -23,9 +23,7 @@ class DocumentService
             $query->where('namedoc', 'ilike', "%{$filters['namedoc']}%");
         }
 
-        $documents = $query->orderBy('created_at', 'desc')->get();
-
-        return $documents->map(function ($doc) {
+        return $query->orderBy('created_at', 'desc')->get()->map(function ($doc) {
             return [
                 'id'            => $doc->id,
                 'namedoc'       => $doc->namedoc,
@@ -45,7 +43,7 @@ class DocumentService
         });
     }
 
-    // ─── Créer un document + multi-assignation ────────────────────────────────
+    // ─── Créer un document ────────────────────────────────────────────────────
 
     public function createDocument(array $data)
     {
@@ -59,7 +57,6 @@ class DocumentService
             'signature_req' => $data['signature_req'],
         ]);
 
-        // ─── Multi-assignation ────────────────────────────────────────────────
         if (!empty($data['user_ids']) && is_array($data['user_ids'])) {
             foreach ($data['user_ids'] as $userId) {
                 $this->assignDocument($document->id, (int) $userId);
@@ -92,14 +89,18 @@ class DocumentService
 
         $document->save();
 
-        // Mise à jour des assignations si user_ids fournis
         if (!empty($data['user_ids']) && is_array($data['user_ids'])) {
-            // Supprimer les anciennes assignations
-            $document->assignments()->delete();
-            // Recréer les nouvelles
+            $existingUserIds = $document->assignments()->pluck('user_id')->toArray();
+
             foreach ($data['user_ids'] as $userId) {
-                $this->assignDocument($document->id, (int) $userId);
+                if (!in_array($userId, $existingUserIds)) {
+                    $this->assignDocument($document->id, (int) $userId);
+                }
             }
+
+            $document->assignments()
+                ->whereNotIn('user_id', $data['user_ids'])
+                ->delete();
         }
 
         return $document;
@@ -126,7 +127,68 @@ class DocumentService
         }
     }
 
-    // ─── Assigner un document à un utilisateur ────────────────────────────────
+    // ─── Documents d'un collaborateur ─────────────────────────────────────────
+
+    public function getDocumentsForCollaborateur(int $userId, array $filters = [])
+{
+    $query = Document::with('assignments.collaborateur', 'assignments.assignedBy');
+
+    // Filtre par user_id — le rôle s'appelle "new_collaborateur"
+    $query->whereHas('assignments', function ($q) use ($userId) {
+        $q->where('user_id', $userId);
+    });
+
+    if (!empty($filters['namedoc'])) {
+        $query->where('namedoc', 'ilike', '%' . $filters['namedoc'] . '%');
+    }
+
+    return $query->orderBy('created_at', 'desc')->get()->map(function ($doc) use ($userId) {
+        return [
+            'id'            => $doc->id,
+            'namedoc'       => $doc->namedoc,
+            'path'          => Storage::url($doc->path),
+            'signature_req' => $doc->signature_req,
+            'assignments'   => $doc->assignments
+                ->where('user_id', $userId)
+                ->map(fn($a) => [
+                    'user_id'        => $a->user_id,
+                    'user_fullname'  => $a->collaborateur
+                        ? $a->collaborateur->first_name . ' ' . $a->collaborateur->last_name
+                        : 'Inconnu',
+                    'assigned_by'    => $a->assignedBy
+                        ? $a->assignedBy->first_name . ' ' . $a->assignedBy->last_name
+                        : 'Système',
+                    'status'         => $a->status,
+                    'signed_at'      => $a->signed_at
+                        ? \Carbon\Carbon::parse($a->signed_at)->toDateTimeString()
+                        : null,
+                    'signed_pdf_path' => $a->signature_path
+                        ? Storage::url($a->signature_path)
+                        : null,
+                ])->values(),
+        ];
+    });
+    }
+
+    // ─── Signer un document ───────────────────────────────────────────────────
+
+    public function signDocument(int $documentId, int $userId, $signatureFile)
+    {
+        $path = $signatureFile->store('signatures', 'public');
+
+        $assignment = DocumentAssignment::where('document_id', $documentId)
+            ->where('user_id', $userId)
+            ->firstOrFail();
+
+        $assignment->status         = 'signed';
+        $assignment->signed_at      = now();
+        $assignment->signature_path = $path;
+        $assignment->save();
+
+        return $assignment;
+    }
+
+    // ─── Assigner un document ─────────────────────────────────────────────────
 
     private function assignDocument(int $documentId, int $userId, string $status = 'pending')
     {
@@ -135,21 +197,22 @@ class DocumentService
             throw new \Exception("Utilisateur destinataire introuvable (id: $userId).");
         }
 
-        $assignedBy = Auth::user();
-
         return DocumentAssignment::create([
             'document_id' => $documentId,
             'user_id'     => $user->id,
-            'assigned_by' => $assignedBy->id,
+            'assigned_by' => Auth::id(),
             'status'      => $status,
+            'signed_at'   => null,
         ]);
     }
 
-    // ─── Mettre à jour une assignation ───────────────────────────────────────
-
-    private function updateAssignment(int $documentId, array $data)
+    // ─── Mettre à jour une assignation ────────────────────────────────────────
+    private function updateAssignment(int $documentId, int $userId, array $data)
     {
-        $assignment = DocumentAssignment::where('document_id', $documentId)->first();
+        $assignment = DocumentAssignment::where('document_id', $documentId)
+            ->where('user_id', $userId)
+            ->first();
+
         if (!$assignment) return null;
 
         if (!empty($data['user_id'])) {
@@ -164,9 +227,13 @@ class DocumentService
 
         if (!empty($data['status'])) {
             $assignment->status = $data['status'];
+            if ($data['status'] === 'signed') {
+                $assignment->signed_at = now();
+            }
         }
 
         $assignment->save();
+
         return $assignment;
     }
 }

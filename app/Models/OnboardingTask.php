@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OnboardingTask extends Model
 {
@@ -20,6 +22,7 @@ class OnboardingTask extends Model
         'deadline',
         'completion_date',
         'status',
+        'rejection_reason',
     ];
 
     protected $casts = [
@@ -27,14 +30,29 @@ class OnboardingTask extends Model
         'completion_date' => 'date',
     ];
 
-    // ── Relations ─────────────────────────────────────────
+    // ── Statuts autorisés ──────────────────────────────────────
 
-    public function onboarding()
+    public const STATUSES = [
+        'en_attente',
+        'en_cours',
+        'en_validation',
+        'rejetee',
+        'termine',
+    ];
+
+    // ── Relations ──────────────────────────────────────────────
+
+    public function onboarding(): BelongsTo
     {
         return $this->belongsTo(Onboarding::class);
     }
 
-    // ── Helpers ───────────────────────────────────────────
+    public function comments(): HasMany
+    {
+        return $this->hasMany(OnboardingTaskComment::class, 'onboarding_task_id')->latest();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────
 
     public function isTermine(): bool
     {
@@ -44,5 +62,15 @@ class OnboardingTask extends Model
     public function isEnCours(): bool
     {
         return $this->status === 'en_cours';
+    }
+
+    public function isPendingValidation(): bool
+    {
+        return $this->status === 'en_validation';
+    }
+
+    public function isRejetee(): bool
+    {
+        return $this->status === 'rejetee';
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions\Role;;
+namespace App\Exceptions\Role;
 
 use Exception;
 

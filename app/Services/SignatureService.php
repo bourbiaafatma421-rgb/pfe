@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Document;
-use App\Models\DocumentSignature;
 use App\Models\DocumentAssignment;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use setasign\Fpdi\Fpdi;
 
 class SignatureService
 {
@@ -51,15 +51,15 @@ class SignatureService
         // Mettre à jour le profil
         $user->update([
             'signature_path'  => $filename,
-            'signature_token' => null, // invalider le token après usage
+            'signature_token' => null,
         ]);
 
         return $user;
     }
 
-    // ─── Appliquer la signature sur un document ───────────────────────────────
+    // ─── Appliquer la signature sur un document PDF ───────────────────────────
 
-    public function signerDocument(int $documentId): DocumentSignature
+    public function signerDocument(int $documentId): DocumentAssignment
     {
         /** @var User $user */
         $user = Auth::user();
@@ -70,7 +70,6 @@ class SignatureService
 
         $document = Document::findOrFail($documentId);
 
-        // Vérifier que le document est assigné à cet utilisateur
         $assignment = DocumentAssignment::where('document_id', $documentId)
             ->where('user_id', $user->id)
             ->first();
@@ -83,20 +82,76 @@ class SignatureService
             throw new \Exception("Vous avez déjà signé ce document.");
         }
 
-        // Créer ou mettre à jour la signature du document
-        $signature = DocumentSignature::updateOrCreate(
-            ['document_id' => $documentId, 'user_id' => $user->id],
-            [
-                'signature_path' => $user->signature_path,
-                'signed_at'      => now(),
-                'status'         => 'signed',
-            ]
-        );
+        // ── Chemins fichiers ──────────────────────────────────────────────────
+        $pdfPath        = Storage::disk('public')->path($document->path);
+        $signaturePath  = Storage::disk('public')->path($user->signature_path);
+        $outputFilename = 'documents/signed_' . $documentId . '_user_' . $user->id . '_' . time() . '.pdf';
+        $outputPath     = Storage::disk('public')->path($outputFilename);
 
-        // Mettre à jour le statut de l'assignment
-        $assignment->update(['status' => 'signed']);
+        // ── Créer dossier si besoin ───────────────────────────────────────────
+        if (!file_exists(dirname($outputPath))) {
+            mkdir(dirname($outputPath), 0755, true);
+        }
 
-        return $signature;
+        // ── Apposer la signature sur le PDF ───────────────────────────────────
+        $this->apposSignatureSurPdf($pdfPath, $signaturePath, $outputPath);
+
+        // ── Mettre à jour l'assignment ────────────────────────────────────────
+        $assignment->update([
+            'status'         => 'signed',
+            'signed_at'      => now(),
+            'signature_path' => $outputFilename,
+        ]);
+
+        return $assignment;
+    }
+
+    // ─── Apposer la signature PNG sur la dernière page du PDF ─────────────────
+
+    private function apposSignatureSurPdf(string $pdfPath, string $signaturePath, string $outputPath): void
+    {
+        $pdf = new Fpdi();
+        $pdf->SetAutoPageBreak(false);
+
+        $pageCount = $pdf->setSourceFile($pdfPath);
+
+        for ($i = 1; $i <= $pageCount; $i++) {
+            $tplId = $pdf->importPage($i);
+            $size  = $pdf->getTemplateSize($tplId);
+
+            $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
+            $pdf->AddPage($orientation, [$size['width'], $size['height']]);
+            $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
+
+            // Apposer signature uniquement sur la dernière page
+            if ($i === $pageCount) {
+                $sigWidth  = 55;  // largeur en mm
+                $sigHeight = 18;  // hauteur en mm
+                $x = $size['width'] - $sigWidth - 15;    // coin bas droite
+                $y = $size['height'] - $sigHeight - 20;
+
+                // Cadre autour de la signature
+                $pdf->SetDrawColor(180, 180, 180);
+                $pdf->Rect($x - 2, $y - 2, $sigWidth + 4, $sigHeight + 10);
+
+                // Label "Signé par"
+                $pdf->SetFont('Helvetica', 'I', 7);
+                $pdf->SetTextColor(120, 120, 120);
+                $pdf->SetXY($x, $y - 6);
+                $pdf->Cell($sigWidth, 4, 'Signature électronique', 0, 0, 'C');
+
+                // Image signature
+                $pdf->Image($signaturePath, $x, $y, $sigWidth, $sigHeight, 'PNG');
+
+                // Date et heure
+                $pdf->SetFont('Helvetica', '', 6);
+                $pdf->SetTextColor(100, 100, 100);
+                $pdf->SetXY($x, $y + $sigHeight + 1);
+                $pdf->Cell($sigWidth, 4, 'Signé le ' . now()->format('d/m/Y à H:i'), 0, 0, 'C');
+            }
+        }
+
+        $pdf->Output('F', $outputPath);
     }
 
     // ─── Vérifier si le collaborateur a une signature ─────────────────────────

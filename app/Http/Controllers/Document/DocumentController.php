@@ -31,12 +31,10 @@ class DocumentController extends Controller
         try {
             $data = $request->validated();
 
-            // Stocker le fichier PDF
             if ($request->hasFile('path')) {
                 $data['path'] = $request->file('path')->store('documents', 'public');
             }
 
-            // Création document + multi-assignation
             $document = $this->service->createDocument($data);
             $document->load('assignments.collaborateur');
 
@@ -137,6 +135,21 @@ class DocumentController extends Controller
 
         return response()->json(['documents' => $documents]);
     }
+
+    // ─── GET /api/documents/mes-documents ────────────────────────────────────
+
+    public function mesDocuments(Request $request){
+    $user = $request->user();
+    if (!$user) {
+        return response()->json(['message' => 'Non authentifié'], 401);
+    }
+    Log::info('Rôle utilisateur : ' . $user->role->name);
+    // authorize supprimé — auth:sanctum protège déjà la route
+    // le service filtre par user_id donc chaque user voit seulement ses docs
+    $filters   = $request->only('namedoc');
+    $documents = $this->service->getDocumentsForCollaborateur($user->id, $filters);
+    return response()->json(['documents' => $documents]);
+}
 
     // ─── POST /api/documents/sign ─────────────────────────────────────────────
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Conversation;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Document;
@@ -10,8 +11,9 @@ use App\Policies\RolePolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\DocumentSignaturePolicy;
-use App\Policies\OnboardingPolicy;         
-use App\Models\Onboarding;                 
+use App\Policies\OnboardingPolicy;
+use App\Policies\ConversationPolicy;
+use App\Models\Onboarding;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -23,6 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         Document::class          => DocumentPolicy::class,
         DocumentSignature::class => DocumentSignaturePolicy::class,
         Onboarding::class        => OnboardingPolicy::class,
+        Conversation::class      => ConversationPolicy::class,
 
     ];
 
