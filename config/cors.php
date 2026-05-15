@@ -6,10 +6,13 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:3000'
+        'http://localhost:3000',
+        env('FRONTEND_URL', 'http://localhost:3000'),
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://[a-z0-9\-]+\.trycloudflare\.com$#',
+    ],
 
     'allowed_headers' => ['*'],
 

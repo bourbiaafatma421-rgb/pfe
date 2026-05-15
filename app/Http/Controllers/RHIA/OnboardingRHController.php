@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\RHIA;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreOnboardingTaskRequest;
+use App\Http\Requests\UpdateOnboardingTaskRequest;
 use App\Models\Onboarding;
 use App\Models\OnboardingTask;
 use App\Models\User;
@@ -37,13 +39,21 @@ class OnboardingRHController extends Controller
     }
 
     // ── Détail d'un onboarding ────────────────────────────
-    public function show(Onboarding $onboarding)
+        public function show(Onboarding $onboarding)
     {
         $this->authorize('view', $onboarding);
 
+        $onboarding->load([
+            'tasks' => fn($q) => $q->orderBy('deadline', 'asc'),  // ← ajouter
+            'tasks.responsable',
+            'tasks.comments',
+            'user',
+            'validatedBy'
+        ]);
+
         return response()->json([
             'success'     => true,
-            'onboarding'  => $onboarding->load(['tasks', 'user', 'validatedBy']),
+            'onboarding'  => $onboarding,
             'progression' => $onboarding->progression(),
         ]);
     }
@@ -98,20 +108,13 @@ class OnboardingRHController extends Controller
     }
 
     // ── Modifier une tâche ────────────────────────────────
-    public function updateTask(Request $request, OnboardingTask $task)
+    public function updateTask(UpdateOnboardingTaskRequest $request, OnboardingTask $task)
     {
         $this->authorize('updateTask', Onboarding::class);
 
-        $request->validate([
-            'task_title' => 'sometimes|string|max:500',
-            'objective'  => 'sometimes|nullable|string',
-            'deadline'   => 'sometimes|date',
-            'type'       => ['sometimes', 'in:technique,administratif,humain,formation'], 
-            'status'     => 'sometimes|in:en_attente,en_cours,termine',
-        ]);
-
         $task->update($request->only([
-            'task_title', 'objective', 'deadline', 'type', 'status',
+            'task_title', 'objective', 'deadline', 'type',
+            'status', 'rejection_reason', 'responsable_id',
         ]));
 
         if ($request->status === 'termine' && !$task->completion_date) {
@@ -121,29 +124,20 @@ class OnboardingRHController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tâche mise à jour.',
-            'task'    => $task->fresh(),
+            'task'    => $task->fresh(['responsable']),
         ]);
     }
 
     // ── Ajouter une tâche ─────────────────────────────────
-    public function addTask(Request $request, Onboarding $onboarding)
+    public function addTask(StoreOnboardingTaskRequest $request, Onboarding $onboarding)
     {
         $this->authorize('addTask', Onboarding::class);
-
-        $request->validate([
-            'task_title'   => 'required|string|max:500',
-            'objective'    => 'nullable|string',
-            'deadline'     => 'required|date',
-            'type'         => 'required|in:technique,administratif,humain',
-            'month_number' => 'required|integer|min:1',
-            'week_number'  => 'required|integer|min:1',
-            'day_name'     => 'nullable|in:lundi,mardi,mercredi,jeudi,vendredi',
-        ]);
 
         $task = $onboarding->tasks()->create([
             ...$request->only([
                 'task_title', 'objective', 'deadline',
-                'type', 'month_number', 'week_number', 'day_name',
+                'type', 'month_number', 'week_number',
+                'day_name', 'responsable_id',
             ]),
             'status' => 'en_attente',
         ]);
@@ -151,7 +145,7 @@ class OnboardingRHController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tâche ajoutée.',
-            'task'    => $task,
+            'task'    => $task->load('responsable'),
         ], 201);
     }
 
@@ -168,6 +162,26 @@ class OnboardingRHController extends Controller
         ]);
     }
 
+    // ── Liste des responsables disponibles ────────────────
+    public function getResponsables()
+{
+    $this->authorize('viewAny', Onboarding::class);
+
+    $responsables = User::where('active', true)
+        ->whereHas('role', function($q) {
+            $q->where('name', '!=', 'new_collaborateur');
+        })
+        ->select('id', 'first_name', 'last_name', 'role_id')
+        ->with('role:id,name')
+        ->orderBy('first_name')
+        ->get();
+
+    return response()->json([
+        'success'      => true,
+        'responsables' => $responsables,
+    ]);
+}
+
     // ── Status Colab ──────────────────────────────────────
     public function colabStatus()
     {
@@ -181,5 +195,4 @@ class OnboardingRHController extends Controller
             'message' => $online ? 'Colab est en ligne.' : 'Colab est hors ligne.',
         ]);
     }
-    
 }

@@ -13,7 +13,7 @@ class RolePolicy
     public function viewAny(User $user): bool
     {
         //Seul le RH peut voir la liste des rôles
-        return $user->hasRole('rh');
+        return $user->hasRole('rh') || $user->hasRole('manager');
     }
     /**
      * Détermine si l'utilisateur peut créer un rôle.

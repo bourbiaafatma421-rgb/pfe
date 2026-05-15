@@ -60,7 +60,6 @@
                   </td>
                 </tr>
               </table>
-
               <!-- Avertissement -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;margin-bottom:28px;">
                 <tr>
@@ -71,58 +70,11 @@
                   </td>
                 </tr>
               </table>
-              <!-- Séparateur -->
-              <hr style="border:none;border-top:2px dashed #e5e7eb;margin:0 0 28px;" />
-
-              <!-- Section QR Code signature -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:12px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:28px;text-align:center;">
-
-                    <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0c4a6e;">
-                       Enregistrez votre signature électronique
-                    </p>
-                    <p style="margin:0 0 20px;font-size:14px;color:#0369a1;line-height:1.6;">
-                      Scannez ce QR Code avec votre téléphone pour dessiner et enregistrer
-                      votre signature. Elle sera utilisée pour signer vos documents.
-                    </p>
-
-                    <!-- QR Code via api.qrserver.com -->
-                    <img
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($signatureUrl) }}"
-                      alt="QR Code Signature"
-                      width="200"
-                      height="200"
-                      style="border-radius:12px;border:3px solid #e0f2fe;display:block;margin:0 auto 20px;background:#fff;padding:8px;"
-                    />
-
-                    <p style="margin:0 0 8px;font-size:12px;color:#64748b;">
-                      Ou ouvrez ce lien directement sur votre téléphone :
-                    </p>
-                    <a href="{{ $signatureUrl }}"
-                       style="font-size:12px;color:#0369a1;word-break:break-all;">
-                      {{ $signatureUrl }}
-                    </a>
-
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
-                      <tr>
-                        <td style="padding:8px 12px;background:#fff;border:1px solid #bae6fd;border-radius:8px;font-size:12px;color:#0369a1;text-align:center;">
-                          ℹ️ Ce lien est à usage unique — il expirera après utilisation
-                        </td>
-                      </tr>
-                    </table>
-
-                  </td>
-                </tr>
-              </table>
-
               <p style="margin:0;font-size:14px;color:#9ca3af;line-height:1.6;">
                 Si vous avez des questions, contactez votre responsable RH.
               </p>
-
             </td>
           </tr>
-
           <!-- Footer -->
           <tr>
             <td style="background:#f8fafc;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">

@@ -211,4 +211,29 @@ private function parsePlanToTasks(Onboarding $onboarding, array $plan, ?string $
             return false;
         }
     }
+      public function submitAvis(array $payload): array
+    {
+        $aiUrl = env('AI_SERVICE_URL');
+ 
+        if (!$aiUrl) {
+            Log::warning('AI_SERVICE_URL non configuré — avis non envoyé.');
+            return ['success' => false, 'message' => 'URL IA non configurée'];
+        }
+ 
+        try {
+            $response = Http::timeout(30)
+                            ->post("{$aiUrl}/submit-avis", $payload);
+ 
+            if ($response->successful()) {
+                return $response->json();
+            }
+ 
+            Log::error('Colab submit-avis failed: ' . $response->status());
+            return ['success' => false, 'message' => 'Erreur Colab ' . $response->status()];
+ 
+        } catch (\Exception $e) {
+            Log::error('Colab submit-avis exception: ' . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
 }

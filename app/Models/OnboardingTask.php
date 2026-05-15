@@ -23,6 +23,7 @@ class OnboardingTask extends Model
         'completion_date',
         'status',
         'rejection_reason',
+        'responsable_id',
     ];
 
     protected $casts = [
@@ -51,6 +52,9 @@ class OnboardingTask extends Model
     {
         return $this->hasMany(OnboardingTaskComment::class, 'onboarding_task_id')->latest();
     }
+    public function responsable(): BelongsTo{
+        return $this->belongsTo(User::class, 'responsable_id');
+}   
 
     // ── Helpers ────────────────────────────────────────────────
 

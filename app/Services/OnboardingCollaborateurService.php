@@ -41,16 +41,15 @@ class OnboardingCollaborateurService
     // Plan d'intégration
     // ────────────────────────────────────────────────────────────
 
-    public function getMyPlan(int $userId): ?array
-    {
-        // FIX : eager load tasks + comments + user pour éviter N+1 et null access
-        $onboarding = Onboarding::with(['tasks.comments.user'])
-            ->where('user_id', $userId)
-            ->latest()
-            ->first();
+  public function getMyPlan(int $userId): ?array{
+    $onboarding = Onboarding::with(['tasks.comments.user', 'tasks.responsable']) // ← ajouter
+        ->where('user_id', $userId)
+        ->latest()
+        ->first();
 
-        return $onboarding ? $this->formatPlan($onboarding) : null;
-    }
+    return $onboarding ? $this->formatPlan($onboarding) : null;
+}
+
 
     // ────────────────────────────────────────────────────────────
     // Tâches
@@ -137,24 +136,30 @@ class OnboardingCollaborateurService
     // ────────────────────────────────────────────────────────────
 
     public function formatTask(OnboardingTask $task): array
-    {
-        return [
-            'id'               => $task->id,
-            'title'            => $task->task_title,
-            'status'           => $task->status,
-            // FIX : 'completed' attendu par le frontend
-            'completed'        => $task->status === 'termine',
-            'due_date'         => $task->deadline?->toDateString(),
-            'day_name'         => $task->day_name,
-            'week_number'      => $task->week_number,
-            'rejection_reason' => $task->rejection_reason,
-            'type'             => $task->type,
-            // FIX : comments formatés inline
-            'comments'         => $task->relationLoaded('comments')
-                ? $task->comments->map(fn($c) => $this->formatComment($c))->values()->all()
-                : [],
-        ];
-    }
+{
+    return [
+        'id'               => $task->id,
+        'title'            => $task->task_title,
+        'status'           => $task->status,
+        'completed'        => $task->status === 'termine',
+        'due_date'         => $task->deadline?->toDateString(),
+        'day_name'         => $task->day_name,
+        'week_number'      => $task->week_number,
+        'rejection_reason' => $task->rejection_reason,
+        'type'             => $task->type,
+        'comments'         => $task->relationLoaded('comments')
+            ? $task->comments->map(fn($c) => $this->formatComment($c))->values()->all()
+            : [],
+        'responsable_id'   => $task->responsable_id,
+        'responsable'      => $task->relationLoaded('responsable') && $task->responsable
+            ? [
+                'id'         => $task->responsable->id,
+                'first_name' => $task->responsable->first_name,
+                'last_name'  => $task->responsable->last_name,
+            ]
+            : null,
+    ];
+}
 
     public function formatComment(OnboardingTaskComment $comment): array
     {
@@ -218,5 +223,29 @@ class OnboardingCollaborateurService
             'meetings'       => [],
             'action_requise' => null,
         ];
+    }
+    // Ajouter cette méthode après getMyPlan()
+    public function getMesSuivis(int $userId): array{
+        $tasks = OnboardingTask::with(['onboarding.user', 'comments.user', 'responsable'])
+            ->where('responsable_id', $userId)
+            ->orderBy('deadline', 'asc')
+            ->get();
+
+        return $tasks->map(function ($task) {
+            return [
+                'id'           => $task->id,
+                'title'        => $task->task_title,
+                'status'       => $task->status,
+                'due_date'     => $task->deadline?->toDateString(),
+                'day_name'     => $task->day_name,
+                'type'         => $task->type,
+                'onboarding_id' => $task->onboarding_id,
+                'collaborateur' => $task->onboarding->user
+                    ? $task->onboarding->user->first_name . ' ' . $task->onboarding->user->last_name
+                    : '—',
+                'comments_count' => $task->comments->count(),
+                'comments'     => $task->comments->map(fn($c) => $this->formatComment($c))->values()->all(),
+            ];
+        })->all();
     }
 }

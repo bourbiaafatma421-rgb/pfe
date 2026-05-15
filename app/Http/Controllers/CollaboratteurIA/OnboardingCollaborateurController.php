@@ -125,4 +125,11 @@ public function myFormations(Request $request): JsonResponse
 
         return $this->onboardingService->streamAttachment($comment);
     }
+        // Ajouter cette méthode
+    public function mesSuivis(Request $request): JsonResponse
+    {
+        $suivis = $this->onboardingService->getMesSuivis($request->user()->id);
+
+        return response()->json(['success' => true, 'data' => $suivis]);
+    }
 }

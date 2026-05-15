@@ -16,17 +16,6 @@ class DashboardService
 
     // ─── Rôles exclus du pie chart (management uniquement) ───────────────────
     private array $excludedFromPie = ['manager'];
-
-    // ─── Labels lisibles pour les rôles techniques ───────────────────────────
-    private array $roleLabels = [
-        'rh'                   => 'RH',
-        'manager'              => 'Manager',
-        'designer'             => 'Designer',
-        'comptable'            => 'Comptable',
-        'développeur backend'  => 'Dev Backend',
-        'développeur frontend' => 'Dev Frontend',
-    ];
-
     // ─── Stats principales ────────────────────────────────────────────────────
 
     public function getStats(): array
@@ -57,23 +46,21 @@ class DashboardService
 
     // ─── Répartition par rôle ─────────────────────────────────────────────────
 
-    public function getRepartitionRoles(): array
-    {
-        $roles = Role::select('roles.id', 'roles.name')
-            ->selectRaw('COUNT(users.id) as users_count')
-            ->leftJoin('users', 'users.role_id', '=', 'roles.id')
-            ->whereNotIn(DB::raw('LOWER(roles.name)'), $this->excludedFromPie)
-            ->groupBy('roles.id', 'roles.name')
-            ->get();
+    public function getRepartitionRoles(): array{
+    $roles = Role::select('roles.id', 'roles.name')
+        ->selectRaw('COUNT(users.id) as users_count')
+        ->leftJoin('users', 'users.role_id', '=', 'roles.id')
+        ->whereNotIn(DB::raw('LOWER(roles.name)'), $this->excludedFromPie)
+        ->groupBy('roles.id', 'roles.name')
+        ->get();
 
-        return $roles->map(function ($role) {
-            $key = strtolower(trim($role->name));
-            return [
-                'role'  => $this->roleLabels[$key] ?? $role->name,
-                'total' => (int) $role->users_count,
-            ];
-        })->toArray();
-    }
+    return $roles->map(function ($role) {
+        return [
+            'role'  => $role->name,  // ← nom brut depuis la base, plus de mapping
+            'total' => (int) $role->users_count,
+        ];
+    })->toArray();
+}
 
     // ─── Nouveaux collaborateurs par mois (6 derniers mois) ──────────────────
 
@@ -117,7 +104,7 @@ class DashboardService
     {
         $activites = [];
 
-        $dernierCollabs = User::with('role')
+        $dernierCollabs = User::with(['role', 'onboarding.tasks'])  // ← eager load
             ->whereHas('role', function ($q) {
                 $q->whereNotIn(DB::raw('LOWER(name)'), $this->excludedFromStats);
             })
@@ -126,12 +113,16 @@ class DashboardService
             ->get();
 
         foreach ($dernierCollabs as $user) {
+            // Utilise directement la méthode progression() du modèle Onboarding
+            $taux = $user->onboarding?->progression() ?? 0;
+
             $activites[] = [
-                'type'     => 'collaborateur',
-                'message'  => "{$user->first_name} {$user->last_name} a rejoint l'équipe",
-                'role'     => $user->role?->name,
-                'date'     => Carbon::parse($user->date_of_hire)->locale('fr')->diffForHumans(),
-                'date_raw' => Carbon::parse($user->date_of_hire),
+                'type'                => 'collaborateur',
+                'message'             => "{$user->first_name} {$user->last_name} a rejoint l'équipe",
+                'role'                => $user->role?->name,
+                'date'                => Carbon::parse($user->date_of_hire)->locale('fr')->diffForHumans(),
+                'date_raw'            => Carbon::parse($user->date_of_hire),
+                'onboarding_progress' => $taux,  // ← taux réel
             ];
         }
 
@@ -227,4 +218,36 @@ class DashboardService
             'alertes_onboarding' => $this->getAlertesOnboarding(),
         ];
     }
+    // ─── Onboarding progress paginé ───────────────────────────────────────────────
+
+public function getOnboardingProgress(int $page = 1, int $perPage = 5): array
+{
+    $collaborateurs = User::with(['role', 'onboarding.tasks'])
+        ->whereHas('role', function ($q) {
+            $q->whereNotIn(DB::raw('LOWER(name)'), ['manager']);
+        })
+        ->where('active', true)
+        ->orderBy('date_of_hire', 'desc')
+        ->paginate($perPage, ['*'], 'page', $page);
+
+    $data = $collaborateurs->map(function ($user) {
+        return [
+            'id'                  => $user->id,
+            'name'                => "{$user->first_name} {$user->last_name}",
+            'role'                => $user->role?->name,
+            'date'                => Carbon::parse($user->date_of_hire)
+                                        ->locale('fr')
+                                        ->diffForHumans(),
+            'onboarding_progress' => $user->onboarding?->progression() ?? 0,
+        ];
+    });
+
+    return [
+        'data'         => $data,
+        'current_page' => $collaborateurs->currentPage(),
+        'last_page'    => $collaborateurs->lastPage(),
+        'total'        => $collaborateurs->total(),
+        'per_page'     => $collaborateurs->perPage(),
+    ];
+}
 }

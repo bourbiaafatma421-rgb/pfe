@@ -12,12 +12,14 @@ use App\Http\Controllers\Signature\SignatureController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Notifications\NotificationController;
 use App\Http\Controllers\Profil\ProfilController;
-use App\Http\Controllers\RHIA\OnboardingRhController;
+use App\Http\Controllers\RHIA\OnboardingRHController;
 use App\Http\Controllers\RHIA\OnboardingValidationController;
 use App\Http\Controllers\Dashboard\DashboardCollaborateurController;
 use App\Http\Controllers\Cv\CvController;
 use App\Http\Controllers\CollaboratteurIA\OnboardingCollaborateurController;
 use App\Http\Controllers\Messaging\MessagingController;
+use App\Http\Controllers\CollaboratteurIA\AvisController;
+
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,29 +34,33 @@ Route::post('/sign/{token}', [SignatureController::class, 'enregistrerSignature'
 
 // ─── Staff (Manager) ──────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/staff', [StaffController::class, 'index'])->middleware('can:viewAny,App\Models\User');
-    Route::get('/staff/{user}', [StaffController::class, 'show'])->middleware('can:view,user');
-    Route::post('/staff', [StaffController::class, 'store'])->middleware('can:create,App\Models\User');
+    Route::get('/staff', [StaffController::class, 'index']);
+    Route::get('/staff/{user}', [StaffController::class, 'show']);
+    Route::post('/staff', [StaffController::class, 'store']);
     Route::patch('/staff/{user}', [StaffController::class, 'update']);
     Route::patch('/staff/{user}/toggle-active', [StaffController::class, 'toggleActive']);
-    Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->middleware('can:delete,App\Models\User');
+    Route::delete('/staff/{id}', [StaffController::class, 'destroy']);
 });
 
 // ─── Collaborateurs / RH ──────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->prefix('collaborateurs')->group(function () {
+
     Route::prefix('roles')->group(function () {
-        Route::get('/', [RoleController::class, 'getall']);
-        Route::post('/', [RoleController::class, 'ajouter']);
+        Route::get('/',         [RoleController::class, 'getall']);
+        Route::post('/',        [RoleController::class, 'ajouter']);
         Route::patch('/{role}', [RoleController::class, 'modifier']);
-        Route::delete('/{role}', [RoleController::class, 'supprimer']);
+        Route::delete('/{role}',[RoleController::class, 'supprimer']);
     });
 
-    Route::post('/', [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
-    Route::get('/', [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User');
-    Route::get('/{id}', [CollaborateurController::class, 'show']);
+    Route::post('/',                 [CollaborateurController::class, 'ajouter'])->middleware('can:create,App\Models\User');
+    Route::get('/',                  [CollaborateurController::class, 'index'])->middleware('can:viewAny,App\Models\User');
+    Route::get('/{id}',              [CollaborateurController::class, 'show']);
     Route::patch('/{collaborateur}', [CollaborateurController::class, 'modifiercollaborateur']);
-});
 
+    Route::post('/onboarding/{id}/avis', [AvisController::class, 'store']);
+    Route::get('/onboarding/{id}/avis',  [AvisController::class, 'show']);
+
+});
 // ─── Profil ───────────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->prefix('profil')->group(function () {
     Route::get('/', [ProfilController::class, 'show']);
@@ -84,6 +90,7 @@ Route::middleware(['auth:sanctum'])->prefix('signature')->group(function () {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->prefix('dashboard')->group(function () {
     Route::get('/stats', [DashboardController::class, 'stats']);
+    Route::get('/onboarding-progress', [DashboardController::class, 'onboardingProgress']);
 });
 
 Route::get('/dashboard/collaborateur', [DashboardCollaborateurController::class, 'index'])
@@ -112,14 +119,15 @@ Route::middleware(['auth:sanctum'])->prefix('cv')->group(function () {
 
 // ─── Onboarding RH ───────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum'])->prefix('onboarding')->group(function () {
-    Route::get('/colab/status',           [OnboardingRhController::class, 'colabStatus']);
-    Route::get('/',                       [OnboardingRhController::class, 'index']);
-    Route::get('/{onboarding}',           [OnboardingRhController::class, 'show']);
-    Route::post('/user/{user}/generer',   [OnboardingRhController::class, 'generer']);
-    Route::patch('/{onboarding}/valider', [OnboardingRhController::class, 'valider']);
-    Route::post('/{onboarding}/tasks',    [OnboardingRhController::class, 'addTask']);
-    Route::patch('/tasks/{task}',         [OnboardingRhController::class, 'updateTask']);
-    Route::delete('/tasks/{task}',        [OnboardingRhController::class, 'deleteTask']);
+    Route::get('/colab/status',           [OnboardingRHController::class, 'colabStatus']);
+    Route::get('/responsables',           [OnboardingRHController::class, 'getResponsables']); // ← monter ici
+    Route::get('/',                       [OnboardingRHController::class, 'index']);
+    Route::get('/{onboarding}',           [OnboardingRHController::class, 'show']);
+    Route::post('/user/{user}/generer',   [OnboardingRHController::class, 'generer']);
+    Route::patch('/{onboarding}/valider', [OnboardingRHController::class, 'valider']);
+    Route::post('/{onboarding}/tasks',    [OnboardingRHController::class, 'addTask']);
+    Route::patch('/tasks/{task}',         [OnboardingRHController::class, 'updateTask']);
+    Route::delete('/tasks/{task}',        [OnboardingRHController::class, 'deleteTask']);
 });
 
 // ─── Onboarding RH — Validation tâches collaborateur ─────────────────────────
@@ -137,6 +145,8 @@ Route::middleware(['auth:sanctum'])->prefix('my')->group(function () {
     Route::post('/tasks/{task}/comments',             [OnboardingCollaborateurController::class, 'addComment']);
     Route::delete('/comments/{comment}',              [OnboardingCollaborateurController::class, 'deleteComment']);
     Route::get('/tasks/{task}/attachments/{comment}', [OnboardingCollaborateurController::class, 'downloadAttachment']);
+    Route::get('/suivis',                             [OnboardingCollaborateurController::class, 'mesSuivis']);
+
 });
 Route::middleware(['auth:sanctum'])->prefix('messaging')->name('messaging.')->group(function () {
         Route::get('unread-count',                           [MessagingController::class, 'unreadCount'])->name('unread');
